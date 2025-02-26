@@ -180,13 +180,64 @@ section {
 .status-item {
     display: flex;
     margin-bottom: 1rem;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .status-item label {
     font-weight: 600;
     margin-right: 0.5rem;
     min-width: 140px;
+}
+
+.status-item span {
+    word-break: break-all;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+/* Key bundle styles */
+#key-bundle .status-item {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+#key-bundle .status-item:last-child {
+    border-bottom: none;
+}
+
+.key-wrapper {
+    display: flex;
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+#identity-key, #signing-key, #encryption-key {
+    word-break: break-all;
+    overflow-wrap: break-word;
+    font-family: monospace;
+    font-size: 0.9rem;
+    background-color: #f5f5f5;
+    padding: 0.5rem;
+    border-radius: 4px;
+    max-width: calc(100% - 30px);
+    display: inline-block;
+}
+
+.copy-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    margin-left: 5px;
+    font-size: 1rem;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.copy-btn:hover {
+    background-color: var(--border-color);
 }
 
 /* Button styles */
@@ -445,6 +496,14 @@ footer {
     
     .button-group {
         flex-direction: column;
+    }
+    
+    .status-item {
+        flex-direction: column;
+    }
+    
+    .status-item label {
+        margin-bottom: 0.5rem;
     }
 }
 

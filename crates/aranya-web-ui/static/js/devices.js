@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({
                     identity: formData.get('identity'),
                     signing: formData.get('signing'),
-                    encoding: formData.get('encoding')
+                    encryption: formData.get('encryption')
                 })
             });
             

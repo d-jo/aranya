@@ -8,9 +8,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const keyBundle = document.getElementById('key-bundle');
     const identityKey = document.getElementById('identity-key');
     const signingKey = document.getElementById('signing-key');
-    const encodingKey = document.getElementById('encoding-key');
+    const encryptionKey = document.getElementById('encryption-key');
     const refreshStatusBtn = document.getElementById('refresh-status-btn');
     const activityLog = document.getElementById('activity-log');
+    const copyButtons = document.querySelectorAll('.copy-btn');
     
     // Load dashboard data
     async function loadDashboardData() {
@@ -42,13 +43,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await fetchWithErrorHandling(`${API_BASE_URL}/device/keys`);
             identityKey.textContent = data.identity;
             signingKey.textContent = data.signing;
-            encodingKey.textContent = data.encoding;
+            encryptionKey.textContent = data.encryption;
             
             addActivityLogEntry('Key bundle loaded');
         } catch (error) {
             identityKey.textContent = 'Failed to load';
             signingKey.textContent = 'Failed to load';
-            encodingKey.textContent = 'Failed to load';
+            encryptionKey.textContent = 'Failed to load';
         }
     }
     
@@ -73,6 +74,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             activityLog.removeChild(entries[entries.length - 1]);
         }
     }
+    
+    // Copy to clipboard functionality
+    copyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.getAttribute('data-copy-target');
+            const textToCopy = document.getElementById(targetId).textContent;
+            
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    showToast('Copied to clipboard!');
+                    addActivityLogEntry('Key copied to clipboard');
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    showToast('Failed to copy text', true);
+                });
+        });
+    });
     
     // Event: Toggle key bundle visibility
     viewKeysBtn.addEventListener('click', () => {

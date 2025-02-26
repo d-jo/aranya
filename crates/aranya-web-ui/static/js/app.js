@@ -11,7 +11,7 @@ const viewKeysBtn = document.getElementById('view-keys-btn');
 const keyBundle = document.getElementById('key-bundle');
 const identityKey = document.getElementById('identity-key');
 const signingKey = document.getElementById('signing-key');
-const encodingKey = document.getElementById('encoding-key');
+const encryptionKey = document.getElementById('encryption-key');
 const toast = document.getElementById('toast');
 
 // Navigation Links
@@ -147,11 +147,13 @@ async function getKeyBundle() {
         const data = await fetchWithErrorHandling(`${API_BASE_URL}/device/keys`);
         identityKey.textContent = data.identity;
         signingKey.textContent = data.signing;
-        encodingKey.textContent = data.encoding;
+        encryptionKey.textContent = data.encryption;
+        return data;
     } catch (error) {
         identityKey.textContent = 'Failed to load';
         signingKey.textContent = 'Failed to load';
-        encodingKey.textContent = 'Failed to load';
+        encryptionKey.textContent = 'Failed to load';
+        throw error;
     }
 }
 
@@ -204,24 +206,21 @@ async function closeTeam(teamId) {
     }
 }
 
-async function addDeviceToTeam(teamId, identity, signing, encoding) {
+async function addDeviceToTeam(teamId, identity, signing, encryption) {
     try {
-        const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/device`, {
+        const response = await fetchWithErrorHandling(`${API_BASE_URL}/team/device`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 team_id: teamId,
                 identity,
                 signing,
-                encoding
+                encryption
             })
         });
-        
-        showToast(data.message);
+        return response;
     } catch (error) {
-        // Error already handled in fetchWithErrorHandling
+        throw error;
     }
 }
 
@@ -471,14 +470,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     
     // Device operations
-    addDeviceForm.addEventListener('submit', (e) => {
+    addDeviceForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const teamId = document.getElementById('add-device-team-id').value;
+        const teamId = document.getElementById('team-select').value;
         const identity = document.getElementById('device-identity-key').value;
         const signing = document.getElementById('device-signing-key').value;
-        const encoding = document.getElementById('device-encoding-key').value;
+        const encryption = document.getElementById('device-encryption-key').value;
         
-        addDeviceToTeam(teamId, identity, signing, encoding);
+        addDeviceToTeam(teamId, identity, signing, encryption);
     });
     
     removeDeviceForm.addEventListener('submit', (e) => {

@@ -40,7 +40,7 @@ struct TeamIdResponse {
 struct KeyBundleResponse {
     identity: String,
     signing: String,
-    encoding: String,
+    encryption: String,
 }
 
 #[derive(Serialize)]
@@ -72,7 +72,7 @@ struct AddDeviceToTeamRequest {
     team_id: String,
     identity: String,
     signing: String,
-    encoding: String,
+    encryption: String,
 }
 
 #[derive(Deserialize)]
@@ -229,7 +229,7 @@ pub async fn get_key_bundle(data: web::Data<AppState>) -> Result<impl Responder,
     Ok(HttpResponse::Ok().json(KeyBundleResponse {
         identity: base64::encode(&key_bundle.identity),
         signing: base64::encode(&key_bundle.signing),
-        encoding: base64::encode(&key_bundle.encoding),
+        encryption: base64::encode(&key_bundle.encryption),
     }))
 }
 
@@ -349,13 +349,13 @@ pub async fn add_device_to_team(
     let signing = base64::decode(&req.signing)
         .map_err(|_| ApiError::BadRequest("Invalid signing encoding".to_string()))?;
     
-    let encoding = base64::decode(&req.encoding)
-        .map_err(|_| ApiError::BadRequest("Invalid encoding encoding".to_string()))?;
+    let encryption = base64::decode(&req.encryption)
+        .map_err(|_| ApiError::BadRequest("Invalid encryption encoding".to_string()))?;
 
     let key_bundle = KeyBundle {
         identity,
         signing,
-        encoding,
+        encryption,
     };
 
     {

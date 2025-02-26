@@ -283,13 +283,13 @@ impl From<Duration> for std::time::Duration {
 #[derive(Copy, Clone, Debug)]
 pub struct KeyBundle {
     /// Public identity key.
-    pub ident_key: *const u8,
+    pub identity: *const u8,
     /// Public identity key length.
-    pub ident_key_len: usize,
+    pub identity_len: usize,
     /// Public signing key.
-    pub sign_key: *const u8,
+    pub signing: *const u8,
     /// Public signing key length.
-    pub sign_key_len: usize,
+    pub signing_len: usize,
     /// Public encryption key.
     pub enc_key: *const u8,
     /// Public encryption key length.
@@ -302,9 +302,9 @@ impl KeyBundle {
         // SAFETY: Must trust caller provides valid ptr/len.
         unsafe {
             aranya_daemon_api::KeyBundle {
-                identity: slice::from_raw_parts(self.ident_key, self.ident_key_len).to_vec(),
-                signing: slice::from_raw_parts(self.sign_key, self.sign_key_len).to_vec(),
-                encoding: slice::from_raw_parts(self.enc_key, self.enc_key_len).to_vec(),
+                identity: slice::from_raw_parts(self.identity, self.identity_len).to_vec(),
+                signing: slice::from_raw_parts(self.signing, self.signing_len).to_vec(),
+                encryption: slice::from_raw_parts(self.enc_key, self.enc_key_len).to_vec(),
             }
         }
     }
@@ -313,14 +313,14 @@ impl KeyBundle {
         // TODO: Don't leak
         let identity = keys.identity.leak();
         let signing = keys.signing.leak();
-        let encoding = keys.encoding.leak();
+        let encryption = keys.encryption.leak();
         KeyBundle {
-            ident_key: identity.as_mut_ptr(),
-            ident_key_len: identity.len(),
-            sign_key: signing.as_mut_ptr(),
-            sign_key_len: signing.len(),
-            enc_key: encoding.as_mut_ptr(),
-            enc_key_len: encoding.len(),
+            identity: identity.as_mut_ptr(),
+            identity_len: identity.len(),
+            signing: signing.as_mut_ptr(),
+            signing_len: signing.len(),
+            enc_key: encryption.as_mut_ptr(),
+            enc_key_len: encryption.len(),
         }
     }
 }

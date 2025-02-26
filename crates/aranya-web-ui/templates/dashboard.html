@@ -57,15 +57,24 @@
                         <div id="key-bundle" class="hidden">
                             <div class="status-item">
                                 <label>Identity:</label>
-                                <span id="identity-key">Loading...</span>
+                                <div class="key-wrapper">
+                                    <span id="identity-key">Loading...</span>
+                                    <button class="copy-btn" data-copy-target="identity-key" title="Copy to clipboard">📋</button>
+                                </div>
                             </div>
                             <div class="status-item">
                                 <label>Signing:</label>
-                                <span id="signing-key">Loading...</span>
+                                <div class="key-wrapper">
+                                    <span id="signing-key">Loading...</span>
+                                    <button class="copy-btn" data-copy-target="signing-key" title="Copy to clipboard">📋</button>
+                                </div>
                             </div>
                             <div class="status-item">
-                                <label>Encoding:</label>
-                                <span id="encoding-key">Loading...</span>
+                                <label>Encryption:</label>
+                                <div class="key-wrapper">
+                                    <span id="encryption-key">Loading...</span>
+                                    <button class="copy-btn" data-copy-target="encryption-key" title="Copy to clipboard">📋</button>
+                                </div>
                             </div>
                         </div>
                     </div>
