@@ -72,12 +72,31 @@
                                 <!-- Saved teams will be displayed here -->
                             </div>
                             
+                            <div class="card mt-4">
+                                <h4>Manually Track Team ID</h4>
+                                <p>Add a team ID to track without joining it. The team will appear in dropdown menus across the application.</p>
+                                <form id="track-team-form">
+                                    <div class="form-group">
+                                        <label for="track-team-id">Team ID:</label>
+                                        <input type="text" id="track-team-id" name="track-team-id" required placeholder="Enter team ID to track">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="track-team-name">Team Name (optional):</label>
+                                        <input type="text" id="track-team-name" name="track-team-name" placeholder="Enter a friendly name for this team">
+                                    </div>
+                                    <button type="submit" class="button primary">Track Team</button>
+                                </form>
+                                <div id="track-team-result" class="result-box hidden"></div>
+                            </div>
+                            
                             <div class="team-details hidden" id="team-details">
                                 <h4>Team Details</h4>
                                 <div class="team-info">
                                     <p><strong>Team ID:</strong> <span id="detail-team-id"></span></p>
+                                    <p id="detail-name-container" class="hidden"><strong>Friendly Name:</strong> <span id="detail-name"></span></p>
                                     <p><strong>Your Role:</strong> <span id="detail-role"></span></p>
                                     <p><strong>Members:</strong> <span id="detail-member-count"></span></p>
+                                    <p><strong>Date Added:</strong> <span id="detail-date-added"></span></p>
                                 </div>
                                 
                                 <h4>Team Operations</h4>

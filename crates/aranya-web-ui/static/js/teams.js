@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const detailTeamId = document.getElementById('detail-team-id');
     const detailRole = document.getElementById('detail-role');
     const detailMemberCount = document.getElementById('detail-member-count');
+    const detailNameContainer = document.getElementById('detail-name-container');
+    const detailName = document.getElementById('detail-name');
+    const detailDateAdded = document.getElementById('detail-date-added');
+    
+    // Manual team tracking elements
+    const trackTeamForm = document.getElementById('track-team-form');
+    const trackTeamResult = document.getElementById('track-team-result');
     
     // Create a new team
     async function createTeam() {
@@ -134,17 +141,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 teamIdSpan.className = 'team-id';
                 formatAndSetupId(team.id, teamIdSpan);
                 
-                // Add the text around the formatted ID
-                teamLink.textContent = 'Team: ';
-                teamLink.appendChild(teamIdSpan);
-                teamLink.appendChild(document.createTextNode(` (owner)`)); // Assume owner for simplicity
+                // Display format: "Team: [Name] (ID: [actual ID])"
+                if (team.name && team.name !== team.id) {
+                    teamLink.textContent = `Team: ${team.name} (ID: `;
+                    teamLink.appendChild(teamIdSpan);
+                    teamLink.appendChild(document.createTextNode(')'));
+                } else {
+                    teamLink.textContent = 'Team: ';
+                    teamLink.appendChild(teamIdSpan);
+                }
                 
                 teamLink.onclick = (e) => {
                     e.preventDefault();
                     showTeamDetails({
                         team_id: team.id,
-                        role: 'owner', // Assume owner for simplicity
-                        member_count: 1  // Assume 1 member for simplicity
+                        role: 'unknown', // May be manually tracked
+                        member_count: 'N/A'  // May be manually tracked
                     });
                 };
                 
@@ -163,14 +175,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Format and set up the team ID for copying
         formatAndSetupId(team.team_id, detailTeamId);
         
-        detailRole.textContent = team.role;
+        // Get the complete team info from storage
+        const savedTeams = getTeams();
+        const savedTeam = savedTeams.find(t => t.id === team.team_id);
+        
+        // Display friendly name if available
+        if (savedTeam && savedTeam.name && savedTeam.name !== savedTeam.id) {
+            detailNameContainer.classList.remove('hidden');
+            detailName.textContent = savedTeam.name;
+        } else {
+            detailNameContainer.classList.add('hidden');
+        }
+        
+        // Display team role (or "Manually tracked" if appropriate)
+        if (team.role === 'unknown') {
+            detailRole.textContent = 'Manually tracked';
+        } else {
+            detailRole.textContent = team.role;
+        }
+        
+        // Display member count (or "N/A" if not available)
         detailMemberCount.textContent = team.member_count;
+        
+        // Display date added if available
+        if (savedTeam && savedTeam.dateAdded) {
+            const date = new Date(savedTeam.dateAdded);
+            detailDateAdded.textContent = date.toLocaleString();
+        } else {
+            detailDateAdded.textContent = 'Unknown';
+        }
         
         // Auto-fill the close team ID
         document.getElementById('close-team-id').value = team.team_id;
         
         // Show the details section
         teamDetails.classList.remove('hidden');
+    }
+    
+    // Manually track a team ID without joining it
+    function trackTeam(teamId, teamName = '') {
+        try {
+            // Add to localStorage
+            addTeamToStorage(teamId, teamName);
+            
+            // Update UI
+            updateTeamDisplays();
+            
+            // Update team list
+            loadTeams();
+            
+            trackTeamResult.classList.remove('hidden');
+            trackTeamResult.textContent = 'Team ID tracked successfully';
+            showToast('Team ID added to tracking successfully');
+            
+            // Reset form
+            document.getElementById('track-team-id').value = '';
+            document.getElementById('track-team-name').value = '';
+        } catch (error) {
+            trackTeamResult.classList.remove('hidden');
+            trackTeamResult.textContent = `Failed to track team ID: ${error.message}`;
+            showToast(`Failed to track team ID: ${error.message}`, true);
+        }
     }
     
     // Event: Create Team button click
@@ -187,6 +252,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         addTeam(teamId);
+    });
+    
+    // Event: Track Team form submit
+    trackTeamForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const teamId = document.getElementById('track-team-id').value;
+        const teamName = document.getElementById('track-team-name').value;
+        
+        if (!teamId) {
+            showToast('Please enter a team ID', true);
+            return;
+        }
+        
+        trackTeam(teamId, teamName);
     });
     
     // Event: Close Team button click
