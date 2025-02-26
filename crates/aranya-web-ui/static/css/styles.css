@@ -61,7 +61,7 @@ h1, h2, h3, h4 {
     background-color: var(--card-bg);
     border-radius: 8px;
     box-shadow: var(--shadow);
-    overflow: hidden;
+    overflow: visible;
     margin-bottom: 2rem;
     align-items: center;
 }
@@ -716,8 +716,8 @@ footer {
     min-width: 250px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    z-index: 10;
-    overflow: hidden;
+    z-index: 1000;
+    overflow: visible;
 }
 
 .api-dropdown-content.show {
