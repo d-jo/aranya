@@ -868,4 +868,26 @@ td.actions {
     font-size: 0.8rem;
     color: #666;
     margin-top: 4px;
+}
+
+/* Hotkey information */
+.hotkey-info {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+}
+
+.hotkey-badge {
+    display: inline-block;
+    background-color: #6c757d;
+    color: white;
+    font-family: monospace;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 12px;
 } 

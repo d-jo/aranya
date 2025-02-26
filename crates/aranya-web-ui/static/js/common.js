@@ -1,12 +1,21 @@
 // Base URL for API calls
 const API_BASE_URL = '/api';
 
+// Keyboard shortcut for quick API switching
+const API_SWAP_HOTKEY = {
+    key: 's',
+    altKey: true,
+    ctrlKey: false,
+    shiftKey: false
+};
+
 // State keys for local storage
 const STATE_KEYS = {
     TEAMS: 'aranya_teams',
     SYNC_PEERS: 'aranya_sync_peers',
     CONFIG: 'aranya_config',
-    API_ENDPOINTS: 'aranya_api_endpoints'
+    API_ENDPOINTS: 'aranya_api_endpoints',
+    RECENT_ENDPOINTS: 'aranya_recent_endpoints'
 };
 
 // Default configuration
@@ -14,6 +23,30 @@ const DEFAULT_CONFIG = {
     apiUrl: 'http://127.0.0.1:8000',
     apiName: 'Default Local API'
 };
+
+// Initialize global event handlers
+document.addEventListener('DOMContentLoaded', () => {
+    // Setup API hotkey listener
+    setupApiSwapHotkey();
+});
+
+// Setup the keyboard shortcut to swap between API endpoints
+function setupApiSwapHotkey() {
+    document.addEventListener('keydown', (e) => {
+        // Check if the hotkey combination matches (Alt+S)
+        if (e.key === API_SWAP_HOTKEY.key && 
+            e.altKey === API_SWAP_HOTKEY.altKey &&
+            e.ctrlKey === API_SWAP_HOTKEY.ctrlKey && 
+            e.shiftKey === API_SWAP_HOTKEY.shiftKey) {
+            
+            // Prevent default browser behavior
+            e.preventDefault();
+            
+            // Swap to the most recent API endpoint
+            swapToRecentEndpoint();
+        }
+    });
+}
 
 // Get current configuration
 function getConfig() {
@@ -291,11 +324,77 @@ function setActiveApiEndpoint(id) {
     
     if (!endpoint) return false;
     
+    // Get current endpoint ID before changing
+    const currentEndpointId = getCurrentApiEndpointId();
+    
+    // Update current endpoint configuration
     updateConfig('apiEndpointId', id);
     updateConfig('apiUrl', endpoint.url);
     updateConfig('apiName', endpoint.name);
     
+    // Update the recent endpoints history if the endpoint is changing
+    if (currentEndpointId !== id) {
+        updateRecentEndpoints(id, currentEndpointId);
+    }
+    
     return true;
+}
+
+// Get and update the history of recently used API endpoints
+function updateRecentEndpoints(newEndpointId, previousEndpointId) {
+    // Get current recent endpoints array
+    const recentJson = localStorage.getItem(STATE_KEYS.RECENT_ENDPOINTS);
+    let recentEndpoints = recentJson ? JSON.parse(recentJson) : [];
+    
+    // Add the new endpoint at the beginning if it's not already there
+    if (previousEndpointId && previousEndpointId !== newEndpointId) {
+        // Remove the previous endpoint if it exists in the history
+        recentEndpoints = recentEndpoints.filter(id => id !== previousEndpointId);
+        
+        // Add the previous endpoint at the beginning
+        recentEndpoints.unshift(previousEndpointId);
+        
+        // Limit the history to 5 most recent endpoints
+        if (recentEndpoints.length > 5) {
+            recentEndpoints.pop();
+        }
+        
+        // Save the updated history
+        localStorage.setItem(STATE_KEYS.RECENT_ENDPOINTS, JSON.stringify(recentEndpoints));
+    }
+}
+
+// Get the most recent API endpoint that was used before the current one
+function getMostRecentEndpointId() {
+    const recentJson = localStorage.getItem(STATE_KEYS.RECENT_ENDPOINTS);
+    const recentEndpoints = recentJson ? JSON.parse(recentJson) : [];
+    
+    // Return the most recent endpoint or default if none exist
+    return recentEndpoints.length > 0 ? recentEndpoints[0] : 'default';
+}
+
+// Swap to the most recently used API endpoint
+function swapToRecentEndpoint() {
+    const recentEndpointId = getMostRecentEndpointId();
+    
+    if (recentEndpointId) {
+        if (setActiveApiEndpoint(recentEndpointId)) {
+            showToast(`Switched to ${getEndpointName(recentEndpointId)} API`);
+            // Reload the page to apply the new endpoint
+            window.apiEndpointChanged = true;
+            window.location.reload();
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Get the name of an API endpoint by its ID
+function getEndpointName(endpointId) {
+    const endpoints = getApiEndpoints();
+    const endpoint = endpoints.find(ep => ep.id === endpointId);
+    return endpoint ? endpoint.name : 'Unknown';
 }
 
 // Get API URL (for direct API calls that bypass the proxy)
