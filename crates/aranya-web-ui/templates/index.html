@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav>
+            <ul>
+                <li><a href="#dashboard" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                <li><a href="#teams" class="nav-link" data-section="teams">Teams</a></li>
+                <li><a href="#devices" class="nav-link" data-section="devices">Devices</a></li>
+                <li><a href="#networking" class="nav-link" data-section="networking">Networking</a></li>
+                <li><a href="#channels" class="nav-link" data-section="channels">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <h2>Dashboard</h2>
+                <div class="card">
+                    <h3>System Status</h3>
+                    <div class="status-item">
+                        <label>API Health:</label>
+                        <span id="api-health">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Aranya Address:</label>
+                        <span id="aranya-address">Loading...</span>
+                    </div>
+                    <div class="status-item">
+                        <label>AFC Address:</label>
+                        <span id="afc-address">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Device Information</h3>
+                    <div class="status-item">
+                        <label>Device ID:</label>
+                        <span id="device-id">Loading...</span>
+                    </div>
+                    <button id="view-keys-btn" class="button">View Key Bundle</button>
+                    <div id="key-bundle" class="hidden">
+                        <div class="status-item">
+                            <label>Identity:</label>
+                            <span id="identity-key">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <label>Signing:</label>
+                            <span id="signing-key">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <label>Encoding:</label>
+                            <span id="encoding-key">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Teams Section -->
+            <section id="teams" class="content-section">
+                <h2>Teams Management</h2>
+                <div class="card">
+                    <h3>Create New Team</h3>
+                    <button id="create-team-btn" class="button">Create Team</button>
+                    <div id="new-team-result" class="result-box hidden"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>Add Existing Team</h3>
+                    <form id="add-team-form">
+                        <div class="form-group">
+                            <label for="team-id">Team ID:</label>
+                            <input type="text" id="team-id" name="team-id" required>
+                        </div>
+                        <button type="submit" class="button">Add Team</button>
+                    </form>
+                    <div id="add-team-result" class="result-box hidden"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>Close Team</h3>
+                    <form id="close-team-form">
+                        <div class="form-group">
+                            <label for="close-team-id">Team ID:</label>
+                            <input type="text" id="close-team-id" name="close-team-id" required>
+                        </div>
+                        <button type="submit" class="button warning">Close Team</button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Devices Section -->
+            <section id="devices" class="content-section">
+                <h2>Device Management</h2>
+                <div class="card">
+                    <h3>Add Device to Team</h3>
+                    <form id="add-device-form">
+                        <div class="form-group">
+                            <label for="add-device-team-id">Team ID:</label>
+                            <input type="text" id="add-device-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-identity-key">Identity Key (Base64):</label>
+                            <input type="text" id="device-identity-key" name="identity" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-signing-key">Signing Key (Base64):</label>
+                            <input type="text" id="device-signing-key" name="signing" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="device-encoding-key">Encoding Key (Base64):</label>
+                            <input type="text" id="device-encoding-key" name="encoding" required>
+                        </div>
+                        <button type="submit" class="button">Add Device</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Remove Device from Team</h3>
+                    <form id="remove-device-form">
+                        <div class="form-group">
+                            <label for="remove-device-team-id">Team ID:</label>
+                            <input type="text" id="remove-device-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="remove-device-id">Device ID:</label>
+                            <input type="text" id="remove-device-id" name="device-id" required>
+                        </div>
+                        <button type="submit" class="button warning">Remove Device</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Manage Device Roles</h3>
+                    <form id="assign-role-form">
+                        <div class="form-group">
+                            <label for="role-team-id">Team ID:</label>
+                            <input type="text" id="role-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-device-id">Device ID:</label>
+                            <input type="text" id="role-device-id" name="device-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-select">Role:</label>
+                            <select id="role-select" name="role" required>
+                                <option value="owner">Owner</option>
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                                <option value="member">Member</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="button" id="assign-role-btn">Assign Role</button>
+                            <button type="submit" class="button warning" id="revoke-role-btn">Revoke Role</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Networking Section -->
+            <section id="networking" class="content-section">
+                <h2>Networking</h2>
+                <div class="card">
+                    <h3>Sync Peer Management</h3>
+                    <form id="add-sync-peer-form">
+                        <div class="form-group">
+                            <label for="sync-team-id">Team ID:</label>
+                            <input type="text" id="sync-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sync-peer-addr">Peer Address:</label>
+                            <input type="text" id="sync-peer-addr" name="addr" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sync-interval">Sync Interval (seconds):</label>
+                            <input type="number" id="sync-interval" name="interval_seconds" value="60" min="1" required>
+                        </div>
+                        <button type="submit" class="button">Add Sync Peer</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Remove Sync Peer</h3>
+                    <form id="remove-sync-peer-form">
+                        <div class="form-group">
+                            <label for="remove-sync-team-id">Team ID:</label>
+                            <input type="text" id="remove-sync-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="remove-sync-peer-addr">Peer Address:</label>
+                            <input type="text" id="remove-sync-peer-addr" name="addr" required>
+                        </div>
+                        <button type="submit" class="button warning">Remove Sync Peer</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Network Identifier Management</h3>
+                    <form id="net-identifier-form">
+                        <div class="form-group">
+                            <label for="net-id-team-id">Team ID:</label>
+                            <input type="text" id="net-id-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="net-id-device-id">Device ID:</label>
+                            <input type="text" id="net-id-device-id" name="device-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="net-identifier">Network Identifier:</label>
+                            <input type="text" id="net-identifier" name="net-identifier" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="button" id="assign-net-id-btn">Assign Identifier</button>
+                            <button type="submit" class="button warning" id="remove-net-id-btn">Remove Identifier</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Channels Section -->
+            <section id="channels" class="content-section">
+                <h2>Communication Channels</h2>
+                <div class="card">
+                    <h3>Create Channel</h3>
+                    <form id="create-channel-form">
+                        <div class="form-group">
+                            <label for="channel-team-id">Team ID:</label>
+                            <input type="text" id="channel-team-id" name="team-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="channel-peer">Peer Identifier:</label>
+                            <input type="text" id="channel-peer" name="peer" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="channel-label">Label:</label>
+                            <input type="text" id="channel-label" name="label" required>
+                        </div>
+                        <button type="submit" class="button">Create Channel</button>
+                    </form>
+                    <div id="create-channel-result" class="result-box hidden"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>Delete Channel</h3>
+                    <form id="delete-channel-form">
+                        <div class="form-group">
+                            <label for="delete-channel-id">Channel ID:</label>
+                            <input type="text" id="delete-channel-id" name="channel-id" required>
+                        </div>
+                        <button type="submit" class="button warning">Delete Channel</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Send Data</h3>
+                    <form id="send-data-form">
+                        <div class="form-group">
+                            <label for="send-channel-id">Channel ID:</label>
+                            <input type="text" id="send-channel-id" name="channel-id" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="send-data">Data:</label>
+                            <textarea id="send-data" name="data" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="button">Send Data</button>
+                    </form>
+                </div>
+                
+                <div class="card">
+                    <h3>Poll Messages</h3>
+                    <button id="poll-messages-btn" class="button">Poll for New Messages</button>
+                    <div id="poll-result" class="result-box hidden"></div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/app.js"></script>
+</body>
+</html> 

@@ -1,0 +1,27 @@
+[package]
+name = "aranya-rest-api"
+version = "0.1.0"
+edition = "2021"
+description = "REST API for Aranya daemon"
+
+[dependencies]
+# Aranya dependencies
+aranya-client = { path = "../aranya-client" }
+aranya-daemon-api = { path = "../aranya-daemon-api" }
+aranya-fast-channels = { version = "0.3.0" }
+aranya-util = { path = "../aranya-util" }
+
+# Web framework & utilities
+actix-web = "4.4.0"
+actix-cors = "0.6.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.35.0", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+anyhow = "1.0.79"
+uuid = { version = "1.4.1", features = ["v4", "serde"] }
+env_logger = "0.10.1"
+log = "0.4.20"
+thiserror = "1.0"
+base64 = "0.13.0" 
