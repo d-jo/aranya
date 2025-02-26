@@ -31,7 +31,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             createChannelResult.classList.remove('hidden');
-            createChannelResult.textContent = `Channel created with ID: ${data.channel_id}`;
+            
+            // Format the channel ID with the new function
+            createChannelResult.textContent = 'Channel created with ID: ';
+            
+            // Create a span for the formatted channel ID
+            const channelIdSpan = document.createElement('span');
+            channelIdSpan.className = 'channel-id';
+            formatAndSetupId(data.channel_id, channelIdSpan);
+            
+            // Append the formatted channel ID
+            createChannelResult.appendChild(channelIdSpan);
+            
             showToast('Channel created successfully');
             
             // Update channel list
@@ -160,6 +171,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const channelId = e.target.dataset.channelId;
                     loadChannelMessages(channelId);
                 });
+            });
+            
+            // For each channel in the list, apply our formatter to the channel ID
+            const channelElements = document.querySelectorAll('.channel-item');
+            channelElements.forEach(element => {
+                const channelIdElement = element.querySelector('.channel-id');
+                if (channelIdElement && channelIdElement.dataset.fullId === undefined) {
+                    const fullId = channelIdElement.textContent.trim();
+                    formatAndSetupId(fullId, channelIdElement);
+                }
             });
         } catch (error) {
             channelsContainer.innerHTML = `<p>Error loading channels: ${error.message}</p>`;

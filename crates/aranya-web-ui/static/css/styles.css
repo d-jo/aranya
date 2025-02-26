@@ -446,4 +446,20 @@ footer {
     .button-group {
         flex-direction: column;
     }
+}
+
+/* Copyable ID styling */
+.copyable-id {
+    cursor: pointer;
+    font-family: monospace;
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    display: inline-block;
+}
+
+.copyable-id:hover {
+    background-color: #e0e0e0;
+    text-decoration: underline;
 } 

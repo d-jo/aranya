@@ -16,6 +16,39 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
+/**
+ * Format an ID to show only the first 7 characters with click-to-copy functionality
+ * @param {string} id - The full ID to format
+ * @param {HTMLElement} element - The element to update with the formatted ID
+ */
+function formatAndSetupId(id, element) {
+    if (!id || !element) return;
+    
+    // Store the full ID as a data attribute
+    element.dataset.fullId = id;
+    
+    // Show only the first 7 characters
+    const shortId = id.substring(0, 7);
+    element.textContent = shortId;
+    
+    // Add styling to indicate it's clickable
+    element.classList.add('copyable-id');
+    element.title = 'Click to copy full ID';
+    
+    // Add click handler to copy the full ID
+    element.addEventListener('click', function() {
+        // Copy the full ID to clipboard
+        navigator.clipboard.writeText(this.dataset.fullId)
+            .then(() => {
+                showToast('Full ID copied to clipboard');
+            })
+            .catch(err => {
+                console.error('Failed to copy ID: ', err);
+                showToast('Failed to copy ID', true);
+            });
+    });
+}
+
 function handleApiError(error) {
     console.error('API Error:', error);
     let errorMessage = 'An error occurred';

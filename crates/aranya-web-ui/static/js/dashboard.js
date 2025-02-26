@@ -23,9 +23,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const afcAddressData = await fetchWithErrorHandling(`${API_BASE_URL}/v1/afc/address`);
             afcAddress.textContent = afcAddressData.address;
             
-            // Get device ID
+            // Get device ID and format it with our new function
             const deviceIdData = await fetchWithErrorHandling(`${API_BASE_URL}/v1/device/id`);
-            deviceId.textContent = deviceIdData.device_id;
+            formatAndSetupId(deviceIdData.device_id, deviceId);
             
             // Add to activity log
             addActivityLogEntry('Dashboard data refreshed');

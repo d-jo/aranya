@@ -23,7 +23,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             newTeamResult.classList.remove('hidden');
-            newTeamResult.textContent = `Team created with ID: ${data.team_id}`;
+            
+            // Create a span for the formatted team ID
+            const teamIdSpan = document.createElement('span');
+            teamIdSpan.className = 'team-id';
+            formatAndSetupId(data.team_id, teamIdSpan);
+            
+            // Update the result message
+            newTeamResult.textContent = 'Team created with ID: ';
+            newTeamResult.appendChild(teamIdSpan);
+            
             showToast('Team created successfully');
             
             // Update team list
@@ -90,13 +99,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Check if we've created a team in this session
             if (newTeamResult.textContent) {
-                const match = newTeamResult.textContent.match(/Team created with ID: (.+)/);
-                if (match && match[1]) {
+                // Try to get the team ID from the child span element
+                const teamIdSpan = newTeamResult.querySelector('.team-id');
+                if (teamIdSpan && teamIdSpan.dataset.fullId) {
                     demoTeams.push({
-                        team_id: match[1],
+                        team_id: teamIdSpan.dataset.fullId,
                         role: 'owner',
                         member_count: 1
                     });
+                } else {
+                    // Fallback to old method
+                    const match = newTeamResult.textContent.match(/Team created with ID: (.+)/);
+                    if (match && match[1]) {
+                        demoTeams.push({
+                            team_id: match[1],
+                            role: 'owner',
+                            member_count: 1
+                        });
+                    }
                 }
             }
             
@@ -117,7 +137,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 const teamLink = document.createElement('a');
                 teamLink.href = '#';
-                teamLink.textContent = `Team: ${team.team_id} (${team.role})`;
+                
+                // Create a span for the team ID and format it
+                const teamIdSpan = document.createElement('span');
+                teamIdSpan.className = 'team-id';
+                formatAndSetupId(team.team_id, teamIdSpan);
+                
+                // Add the text around the formatted ID
+                teamLink.textContent = 'Team: ';
+                teamLink.appendChild(teamIdSpan);
+                teamLink.appendChild(document.createTextNode(` (${team.role})`));
+                
                 teamLink.onclick = (e) => {
                     e.preventDefault();
                     showTeamDetails(team);
@@ -135,7 +165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Show team details
     function showTeamDetails(team) {
-        detailTeamId.textContent = team.team_id;
+        // Format and set up the team ID for copying
+        formatAndSetupId(team.team_id, detailTeamId);
+        
         detailRole.textContent = team.role;
         detailMemberCount.textContent = team.member_count;
         

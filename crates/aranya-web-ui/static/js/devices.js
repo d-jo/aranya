@@ -28,7 +28,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             addDeviceResult.classList.remove('hidden');
-            addDeviceResult.textContent = `Device added successfully. Device ID: ${data.device_id}`;
+            
+            // Format the device ID with the new function
+            addDeviceResult.textContent = 'Device added successfully. Device ID: ';
+            
+            // Create a span for the formatted device ID
+            const deviceIdSpan = document.createElement('span');
+            deviceIdSpan.className = 'device-id';
+            formatAndSetupId(data.device_id, deviceIdSpan);
+            
+            // Append the formatted device ID
+            addDeviceResult.appendChild(deviceIdSpan);
+            
             showToast('Device added successfully');
         } catch (error) {
             addDeviceResult.classList.remove('hidden');

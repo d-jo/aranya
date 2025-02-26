@@ -235,7 +235,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         removeNetId(teamId, deviceId, netId);
     });
     
+    // Format network IDs on page load
+    formatNetworkIds();
+    
     // Initial load
     loadSyncPeers();
     loadNetIds();
-}); 
+});
+
+function formatNetworkIds() {
+    // Find all elements that contain network IDs and apply the formatter
+    const networkIdElements = document.querySelectorAll('.network-id');
+    networkIdElements.forEach(element => {
+        if (element.dataset.fullId === undefined) {
+            const fullId = element.textContent.trim();
+            formatAndSetupId(fullId, element);
+        }
+    });
+} 
