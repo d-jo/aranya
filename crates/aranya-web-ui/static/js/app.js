@@ -169,6 +169,12 @@ async function createTeam() {
         newTeamResult.classList.remove('hidden');
         newTeamResult.textContent = `Team created with ID: ${data.team_id}`;
         showToast('Team created successfully');
+        
+        // Save the team to localStorage
+        addTeamToStorage(data.team_id);
+        
+        // Update the team lists display
+        updateTeamDisplays();
     } catch (error) {
         newTeamResult.classList.remove('hidden');
         newTeamResult.textContent = `Failed to create team: ${error.message}`;
@@ -188,6 +194,12 @@ async function addTeam(teamId) {
         addTeamResult.classList.remove('hidden');
         addTeamResult.textContent = data.message;
         showToast('Team added successfully');
+        
+        // Save the team to localStorage
+        addTeamToStorage(teamId);
+        
+        // Update the team lists display
+        updateTeamDisplays();
     } catch (error) {
         addTeamResult.classList.remove('hidden');
         addTeamResult.textContent = `Failed to add team: ${error.message}`;
@@ -201,6 +213,12 @@ async function closeTeam(teamId) {
         });
         
         showToast(data.message);
+        
+        // Remove the team from localStorage
+        removeTeamFromStorage(teamId);
+        
+        // Update the team lists display
+        updateTeamDisplays();
     } catch (error) {
         // Error already handled in fetchWithErrorHandling
     }
@@ -291,6 +309,12 @@ async function addSyncPeer(teamId, addr, intervalSeconds) {
         });
         
         showToast(data.message);
+        
+        // Save the sync peer to localStorage
+        addSyncPeerToStorage(teamId, addr, intervalSeconds);
+        
+        // Update the sync peer lists display
+        updateSyncPeerDisplays();
     } catch (error) {
         // Error already handled in fetchWithErrorHandling
     }
@@ -310,6 +334,12 @@ async function removeSyncPeer(teamId, addr) {
         });
         
         showToast(data.message);
+        
+        // Remove the sync peer from localStorage
+        removeSyncPeerFromStorage(teamId, addr);
+        
+        // Update the sync peer lists display
+        updateSyncPeerDisplays();
     } catch (error) {
         // Error already handled in fetchWithErrorHandling
     }
@@ -435,6 +465,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Also pre-load the key bundle data but keep it hidden
         getKeyBundle();
+        
+        // Load and display saved teams and sync peers
+        updateTeamDisplays();
+        updateSyncPeerDisplays();
     }
     
     // Navigation

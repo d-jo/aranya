@@ -1,5 +1,8 @@
 // Channels page specific JavaScript
 document.addEventListener('DOMContentLoaded', async () => {
+    // Load and populate team dropdowns
+    updateTeamDisplays();
+    
     // Channel elements
     const channelsContainer = document.getElementById('channels-container');
     const pollMessagesBtn = document.getElementById('poll-messages-btn');

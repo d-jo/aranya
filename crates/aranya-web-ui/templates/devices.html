@@ -43,8 +43,10 @@
                             <p>Add a new device to your team by providing its cryptographic keys.</p>
                             <form id="add-device-form">
                                 <div class="form-group">
-                                    <label for="add-device-team-id">Team ID:</label>
-                                    <input type="text" id="add-device-team-id" name="team-id" required placeholder="Enter team ID">
+                                    <label for="team-select">Team ID:</label>
+                                    <select id="team-select" name="team-id" class="team-dropdown" required>
+                                        <option value="">Select a team</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="device-identity-key">Identity Key (Base64):</label>

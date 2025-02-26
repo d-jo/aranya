@@ -35,6 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             showToast('Team created successfully');
             
+            // Add to localStorage
+            addTeamToStorage(data.team_id);
+            
+            // Update UI
+            updateTeamDisplays();
+            
             // Update team list
             loadTeams();
         } catch (error) {
@@ -58,6 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             addTeamResult.textContent = data.message || 'Team added successfully';
             showToast('Team added successfully');
             
+            // Add to localStorage
+            addTeamToStorage(teamId);
+            
+            // Update UI
+            updateTeamDisplays();
+            
             // Update team list
             loadTeams();
         } catch (error) {
@@ -80,6 +92,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             showToast(data.message || 'Team closed successfully');
             
+            // Remove from localStorage
+            removeTeamFromStorage(teamId);
+            
+            // Update UI
+            updateTeamDisplays();
+            
             // Update team list
             loadTeams();
         } catch (error) {
@@ -90,40 +108,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Get list of teams
     async function loadTeams() {
         try {
-            // Simulated API call for now - replace with actual endpoint when available
-            // const data = await fetchWithErrorHandling(`${API_BASE_URL}/teams`);
-            
-            // For demo purposes, let's simulate a team list
-            // In a real implementation, this would come from the API
-            const demoTeams = [];
-            
-            // Check if we've created a team in this session
-            if (newTeamResult.textContent) {
-                // Try to get the team ID from the child span element
-                const teamIdSpan = newTeamResult.querySelector('.team-id');
-                if (teamIdSpan && teamIdSpan.dataset.fullId) {
-                    demoTeams.push({
-                        team_id: teamIdSpan.dataset.fullId,
-                        role: 'owner',
-                        member_count: 1
-                    });
-                } else {
-                    // Fallback to old method
-                    const match = newTeamResult.textContent.match(/Team created with ID: (.+)/);
-                    if (match && match[1]) {
-                        demoTeams.push({
-                            team_id: match[1],
-                            role: 'owner',
-                            member_count: 1
-                        });
-                    }
-                }
-            }
+            // Get teams from localStorage
+            const savedTeams = getTeams();
             
             // Update the team list UI
             teamList.innerHTML = '';
             
-            if (demoTeams.length === 0) {
+            if (savedTeams.length === 0) {
                 teamList.innerHTML = '<p>No teams found. Create a new team or join an existing one.</p>';
                 return;
             }
@@ -131,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const teamListEl = document.createElement('ul');
             teamListEl.className = 'teams-list';
             
-            demoTeams.forEach(team => {
+            savedTeams.forEach(team => {
                 const teamItem = document.createElement('li');
                 teamItem.className = 'team-item';
                 
@@ -141,16 +132,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create a span for the team ID and format it
                 const teamIdSpan = document.createElement('span');
                 teamIdSpan.className = 'team-id';
-                formatAndSetupId(team.team_id, teamIdSpan);
+                formatAndSetupId(team.id, teamIdSpan);
                 
                 // Add the text around the formatted ID
                 teamLink.textContent = 'Team: ';
                 teamLink.appendChild(teamIdSpan);
-                teamLink.appendChild(document.createTextNode(` (${team.role})`));
+                teamLink.appendChild(document.createTextNode(` (owner)`)); // Assume owner for simplicity
                 
                 teamLink.onclick = (e) => {
                     e.preventDefault();
-                    showTeamDetails(team);
+                    showTeamDetails({
+                        team_id: team.id,
+                        role: 'owner', // Assume owner for simplicity
+                        member_count: 1  // Assume 1 member for simplicity
+                    });
                 };
                 
                 teamItem.appendChild(teamLink);

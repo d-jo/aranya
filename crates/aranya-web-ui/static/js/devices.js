@@ -1,5 +1,8 @@
 // Devices page specific JavaScript
 document.addEventListener('DOMContentLoaded', async () => {
+    // Load and populate team dropdowns
+    updateTeamDisplays();
+    
     // Device elements
     const addDeviceForm = document.getElementById('add-device-form');
     const addDeviceResult = document.getElementById('add-device-result');

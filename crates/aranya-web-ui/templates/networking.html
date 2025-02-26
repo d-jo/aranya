@@ -45,7 +45,9 @@
                             <form id="add-sync-peer-form">
                                 <div class="form-group">
                                     <label for="sync-team-id">Team ID:</label>
-                                    <input type="text" id="sync-team-id" name="team-id" required placeholder="Enter team ID">
+                                    <select id="sync-team-id" name="team-id" class="team-dropdown" required>
+                                        <option value="">Select a team</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="sync-peer-addr">Peer Address:</label>
@@ -63,7 +65,9 @@
                             <form id="remove-sync-peer-form">
                                 <div class="form-group">
                                     <label for="remove-sync-team-id">Team ID:</label>
-                                    <input type="text" id="remove-sync-team-id" name="team-id" required placeholder="Enter team ID">
+                                    <select id="remove-sync-team-id" name="team-id" class="team-dropdown" required>
+                                        <option value="">Select a team</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="remove-sync-peer-addr">Peer Address:</label>
@@ -79,6 +83,10 @@
                             <div id="sync-peer-list">
                                 <p>No sync peers configured</p>
                             </div>
+                            
+                            <div id="saved-sync-peers-list" class="saved-items-container">
+                                <!-- Saved sync peers will be displayed here -->
+                            </div>
                         </div>
                     </div>
                     
@@ -90,7 +98,9 @@
                             <form id="net-identifier-form">
                                 <div class="form-group">
                                     <label for="net-id-team-id">Team ID:</label>
-                                    <input type="text" id="net-id-team-id" name="team-id" required placeholder="Enter team ID">
+                                    <select id="net-id-team-id" name="team-id" class="team-dropdown" required>
+                                        <option value="">Select a team</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="net-id-device-id">Device ID:</label>

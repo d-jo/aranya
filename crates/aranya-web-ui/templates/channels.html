@@ -68,7 +68,9 @@
                             <form id="create-channel-form">
                                 <div class="form-group">
                                     <label for="channel-team-id">Team ID:</label>
-                                    <input type="text" id="channel-team-id" name="team-id" required placeholder="Enter team ID">
+                                    <select id="channel-team-id" name="team-id" class="team-dropdown" required>
+                                        <option value="">Select a team</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="channel-peer">Peer Identifier:</label>

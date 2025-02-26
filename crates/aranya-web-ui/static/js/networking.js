@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             addPeerResult.textContent = data.message || 'Sync peer added successfully';
             showToast('Sync peer added successfully');
             
+            // Add to localStorage
+            addSyncPeerToStorage(teamId, peerAddr, parseInt(intervalSeconds));
+            
+            // Update the UI
+            updateSyncPeerDisplays();
+            
             // Refresh sync peer list
             loadSyncPeers();
         } catch (error) {
@@ -55,6 +61,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             removePeerResult.classList.remove('hidden');
             removePeerResult.textContent = data.message || 'Sync peer removed successfully';
             showToast('Sync peer removed successfully');
+            
+            // Remove from localStorage
+            removeSyncPeerFromStorage(teamId, peerAddr);
+            
+            // Update the UI
+            updateSyncPeerDisplays();
             
             // Refresh sync peer list
             loadSyncPeers();
@@ -117,23 +129,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load sync peers
     async function loadSyncPeers() {
         try {
-            // Simulated data for demo - replace with actual API call
-            const demoSyncPeers = [];
+            // Get sync peers from localStorage
+            const savedPeers = getSyncPeers();
             
             // Update the sync peer list UI
-            if (demoSyncPeers.length === 0) {
+            if (savedPeers.length === 0) {
                 syncPeerList.innerHTML = '<p>No sync peers configured</p>';
                 return;
             }
             
             let peerListHtml = '<ul class="peer-list">';
-            demoSyncPeers.forEach(peer => {
+            savedPeers.forEach(peer => {
                 peerListHtml += `
                     <li class="peer-item">
                         <div class="peer-info">
-                            <strong>Team ID:</strong> ${peer.team_id}<br>
+                            <strong>Team ID:</strong> ${peer.teamId}<br>
                             <strong>Peer Address:</strong> ${peer.addr}<br>
-                            <strong>Sync Interval:</strong> ${peer.interval_seconds} seconds
+                            <strong>Sync Interval:</strong> ${peer.intervalSeconds} seconds
                         </div>
                     </li>
                 `;
@@ -241,6 +253,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial load
     loadSyncPeers();
     loadNetIds();
+    
+    // Update team dropdowns
+    updateTeamDisplays();
 });
 
 function formatNetworkIds() {
