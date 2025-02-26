@@ -108,9 +108,21 @@ async function checkHealth() {
         const data = await fetchWithErrorHandling(`${API_BASE_URL}/v1/health`);
         apiHealth.textContent = data.message || 'OK';
         connectionStatus.textContent = 'Connected';
+        
+        // Update the API connection status in the nav dropdown if it exists
+        if (typeof updateApiNavStatus === 'function') {
+            updateApiNavStatus(true);
+        }
+        
         return true;
     } catch (error) {
         apiHealth.textContent = 'Offline';
+        
+        // Update the API connection status in the nav dropdown if it exists
+        if (typeof updateApiNavStatus === 'function') {
+            updateApiNavStatus(false);
+        }
+        
         return false;
     }
 }
@@ -454,6 +466,15 @@ async function pollMessages() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize the API dropdown in the header if function exists
+    if (typeof initApiNavDropdown === 'function') {
+        initApiNavDropdown();
+    }
+    
+    // Store the current config for API change detection
+    const config = getConfig();
+    window.lastKnownConfig = { ...config };
+    
     // Check health and load initial data
     const isHealthy = await checkHealth();
     
@@ -466,9 +487,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Also pre-load the key bundle data but keep it hidden
         getKeyBundle();
         
-        // Load and display saved teams and sync peers
+        // Load and display saved teams and sync peers for the current API
         updateTeamDisplays();
         updateSyncPeerDisplays();
+        
+        // If this page loaded after an API change, show a special message
+        if (window.apiEndpointChanged) {
+            showToast(`Switched to ${config.apiName}. Showing data for this API endpoint.`);
+            window.apiEndpointChanged = false;
+        } else {
+            // Regular connection message
+            showToast(`Connected to API: ${config.apiName}`);
+        }
+    } else {
+        showToast('Failed to connect to API. Please check API settings.', true);
     }
     
     // Navigation
@@ -481,12 +513,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     
     // View keys button
-    viewKeysBtn.addEventListener('click', () => {
-        keyBundle.classList.toggle('hidden');
-        viewKeysBtn.textContent = keyBundle.classList.contains('hidden') 
-            ? 'View Key Bundle' 
-            : 'Hide Key Bundle';
-    });
+    if (viewKeysBtn) {
+        viewKeysBtn.addEventListener('click', () => {
+            keyBundle.classList.toggle('hidden');
+            viewKeysBtn.textContent = keyBundle.classList.contains('hidden') 
+                ? 'View Key Bundle' 
+                : 'Hide Key Bundle';
+        });
+    }
     
     // Team operations
     createTeamBtn.addEventListener('click', createTeam);

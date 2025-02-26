@@ -831,6 +831,7 @@ dependencies = [
  "awc",
  "env_logger",
  "log",
+ "url",
 ]
 
 [[package]]

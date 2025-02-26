@@ -63,6 +63,7 @@ h1, h2, h3, h4 {
     box-shadow: var(--shadow);
     overflow: hidden;
     margin-bottom: 2rem;
+    align-items: center;
 }
 
 .main-nav li {
@@ -584,4 +585,287 @@ footer {
 
 .primary-button:hover {
     background-color: #1976d2;
+}
+
+/* Add styles for API endpoints management */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.data-table .button.small {
+    padding: 3px 8px;
+    font-size: 0.8em;
+}
+
+.data-table .button.danger {
+    background-color: #f44336;
+    color: white;
+}
+
+.data-table .button.danger:hover {
+    background-color: #d32f2f;
+}
+
+.active-endpoint {
+    background-color: #f0f7ff;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.badge.status {
+    color: white;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+/* API Dropdown in Navigation Bar */
+.nav-api-selector {
+    margin-left: auto;
+    position: relative;
+}
+
+.api-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.api-toggle {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.api-toggle:hover {
+    background-color: rgba(74, 123, 255, 0.1);
+}
+
+.api-name {
+    font-weight: 500;
+    margin-right: 0.5rem;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.api-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.api-indicator.connected {
+    background-color: var(--success-color);
+}
+
+.api-indicator.disconnected {
+    background-color: var(--danger-color);
+}
+
+.dropdown-arrow {
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+}
+
+.api-dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--card-bg);
+    min-width: 250px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    z-index: 10;
+    overflow: hidden;
+}
+
+.api-dropdown-content.show {
+    display: block;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.api-dropdown-content a {
+    display: block;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background-color 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.api-dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.api-dropdown-content a.active {
+    background-color: rgba(74, 123, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.api-dropdown-content a:hover {
+    background-color: #f5f5f5;
+}
+
+.api-dropdown-content a small {
+    display: block;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.api-dropdown-content a.manage-endpoints {
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-weight: 500;
+    background-color: #f8f9fa;
+}
+
+/* API Connection Settings */
+.connection-status-card {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.connection-details {
+    margin-bottom: 15px;
+}
+
+.detail-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    flex: 0 0 120px;
+    font-weight: bold;
+    color: #555;
+}
+
+.detail-value {
+    flex: 1;
+}
+
+#api-connection-status.connected {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+#api-connection-status.disconnected {
+    color: #F44336;
+    font-weight: bold;
+}
+
+/* API Endpoints Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.data-table th {
+    background-color: #f5f5f5;
+    text-align: left;
+    padding: 10px;
+    font-weight: bold;
+    border-bottom: 2px solid #ddd;
+}
+
+.data-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+    color: #333;
+    margin-left: 8px;
+}
+
+.badge.connected {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+}
+
+.badge.disconnected {
+    background-color: #FFEBEE;
+    color: #C62828;
+}
+
+.badge.inactive {
+    background-color: #E0E0E0;
+    color: #616161;
+}
+
+td.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.small-button {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+}
+
+.form-help {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 4px;
 } 

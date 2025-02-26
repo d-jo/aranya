@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+                <li><a href="/settings" class="nav-link active">Settings</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Aranya Settings</h2>
+                
+                <div class="card">
+                    <h3>API Connection Settings</h3>
+                    <p>Configure the connection to the Aranya REST API service.</p>
+                    
+                    <div class="connection-status-card">
+                        <h4>Active API Connection</h4>
+                        <div class="connection-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Connected to:</span>
+                                <span class="detail-value" id="api-connected-to">Default</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">URL:</span>
+                                <span class="detail-value" id="api-url">http://127.0.0.1:8000</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Status:</span>
+                                <span class="detail-value" id="api-connection-status">Connecting...</span>
+                            </div>
+                        </div>
+                        <button id="test-connection" class="button primary">Test Connection</button>
+                    </div>
+                    
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <button class="tab-button active" data-tab="api-endpoints">API Endpoints</button>
+                            <button class="tab-button" data-tab="add-endpoint">Add Endpoint</button>
+                        </div>
+                        
+                        <div class="tab-content active" id="api-endpoints">
+                            <h4>Saved API Endpoints</h4>
+                            <p>Select an API endpoint to connect to. Each endpoint maintains its own separate state for teams and sync peers.</p>
+                            
+                            <table id="api-endpoints-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>URL</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- API endpoints will be listed here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="tab-content" id="add-endpoint">
+                            <h4>Add New API Endpoint</h4>
+                            <p>Add a new API endpoint to connect to an Aranya REST API service.</p>
+                            
+                            <form id="add-endpoint-form">
+                                <div class="form-group">
+                                    <label for="endpoint-name">Name:</label>
+                                    <input type="text" id="endpoint-name" name="endpoint-name" placeholder="e.g., Production API" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="endpoint-url">URL:</label>
+                                    <input type="text" id="endpoint-url" name="endpoint-url" placeholder="e.g., http://127.0.0.1:8000" required>
+                                    <small class="form-help">Include the protocol (http:// or https://) and port if necessary.</small>
+                                </div>
+                                <button type="submit" class="button primary">Add Endpoint</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <h3>Local Storage Settings</h3>
+                    <p>Manage state data stored locally in your browser.</p>
+                    
+                    <div class="storage-info-card">
+                        <h4>Current API Storage</h4>
+                        <p>Teams, devices, and sync peers are stored separately for each API endpoint.</p>
+                        <div id="current-api-storage-info" class="storage-stats">
+                            <!-- This will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="clear-storage-btn" class="button warning">Clear All Stored Data</button>
+                        <button id="reload-storage-btn" class="button secondary">Reload Data</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/settings.js"></script>
+</body>
+</html> 

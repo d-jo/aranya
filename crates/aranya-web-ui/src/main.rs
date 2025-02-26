@@ -3,6 +3,7 @@ use actix_web::{App, HttpServer, web, middleware, HttpResponse};
 use std::path::PathBuf;
 use std::env;
 use std::collections::HashMap;
+use url::form_urlencoded;
 
 // Helper function to render HTML pages
 fn render_page(templates_dir: &PathBuf, page: &str) -> String {
@@ -145,6 +146,17 @@ async fn main() -> std::io::Result<()> {
                     }
                 }
             }))
+            .service(web::resource("/settings").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "settings");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
             // Serve static files
             .service(fs::Files::new("/static", &static_dir))
             // API proxy
@@ -154,6 +166,41 @@ async fn main() -> std::io::Result<()> {
                         // Get the path component after /api
                         let orig_path = req.uri().path();
                         let path_without_api = orig_path.trim_start_matches("/api");
+                        
+                        // Get the API endpoint from the query string if provided
+                        let mut api_address_to_use = api_base.clone();
+                        let query_string = req.uri().query().unwrap_or("");
+                        
+                        if query_string.contains("api_endpoint=") {
+                            // Parse the query string to get the api_endpoint
+                            let params: HashMap<_, _> = form_urlencoded::parse(query_string.as_bytes())
+                                .into_owned()
+                                .collect();
+                            
+                            if let Some(endpoint) = params.get("api_endpoint") {
+                                if !endpoint.is_empty() {
+                                    // Validate URL format
+                                    if endpoint.starts_with("http://") || endpoint.starts_with("https://") {
+                                        api_address_to_use = endpoint.clone();
+                                        println!("Using custom API endpoint: {}", api_address_to_use);
+                                    }
+                                }
+                            }
+                        } else if query_string.contains("api_port=") {
+                            // Legacy support for api_port parameter
+                            let params: HashMap<_, _> = form_urlencoded::parse(query_string.as_bytes())
+                                .into_owned()
+                                .collect();
+                            
+                            if let Some(port) = params.get("api_port") {
+                                if let Ok(port_num) = port.parse::<u16>() {
+                                    if port_num > 0 {
+                                        api_address_to_use = format!("http://127.0.0.1:{}", port_num);
+                                        println!("Using API port from query string: {}", port_num);
+                                    }
+                                }
+                            }
+                        }
                         
                         // Construct the final API path with proper prefixes
                         let target_path = if path_without_api.starts_with("/v1") {
@@ -168,7 +215,7 @@ async fn main() -> std::io::Result<()> {
                         };
                         
                         // Create the target API URL
-                        let api_url = format!("{}{}", api_base, target_path);
+                        let api_url = format!("{}{}", api_address_to_use, target_path);
                         
                         println!("Forwarding API request: {} -> {}", req.uri().path(), api_url);
                         

@@ -15,6 +15,18 @@
             </div>
         </header>
         
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link active">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+                <li><a href="/settings" class="nav-link">Settings</a></li>
+            </ul>
+        </nav>
+        
         <main class="landing-page">
             <div class="welcome-card">
                 <h2>Welcome to Aranya</h2>
@@ -72,20 +84,19 @@
     <script>
         // Landing page specific script
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check API health on load
-            try {
-                const response = await fetch('/api/v1/health');
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('api-health').textContent = data.message || 'OK';
-                    document.getElementById('connection-status').textContent = 'Connected';
+            // Check API health is now handled in common.js
+            // We'll check if the API is connected after a short delay
+            setTimeout(() => {
+                // Update the API connection indicator based on the connection status
+                const connectionStatus = document.getElementById('connection-status');
+                const apiHealth = document.getElementById('api-health');
+                
+                if (connectionStatus && connectionStatus.textContent === 'Connected') {
+                    apiHealth.textContent = 'Online';
                 } else {
-                    throw new Error('API not responding');
+                    apiHealth.textContent = 'Offline';
                 }
-            } catch (error) {
-                document.getElementById('api-health').textContent = 'Offline';
-                document.getElementById('connection-status').textContent = 'Error connecting to API';
-            }
+            }, 1500);
         });
     </script>
 </body>
