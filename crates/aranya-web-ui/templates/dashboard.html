@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Dashboard</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="card system-status">
+                        <h3>System Status</h3>
+                        <div class="status-item">
+                            <label>API Health:</label>
+                            <span id="api-health">Checking...</span>
+                        </div>
+                        <div class="status-item">
+                            <label>Aranya Address:</label>
+                            <span id="aranya-address">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <label>AFC Address:</label>
+                            <span id="afc-address">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card device-info">
+                        <h3>Device Information</h3>
+                        <div class="status-item">
+                            <label>Device ID:</label>
+                            <span id="device-id">Loading...</span>
+                        </div>
+                        <button id="view-keys-btn" class="button">View Key Bundle</button>
+                        <div id="key-bundle" class="hidden">
+                            <div class="status-item">
+                                <label>Identity:</label>
+                                <span id="identity-key">Loading...</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Signing:</label>
+                                <span id="signing-key">Loading...</span>
+                            </div>
+                            <div class="status-item">
+                                <label>Encoding:</label>
+                                <span id="encoding-key">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card activity-log">
+                        <h3>Recent Activity</h3>
+                        <div id="activity-log">
+                            <p>No recent activity to display</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="button-group">
+                            <a href="/teams" class="button">Manage Teams</a>
+                            <a href="/channels" class="button">Manage Channels</a>
+                            <button id="refresh-status-btn" class="button">Refresh Status</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html> 

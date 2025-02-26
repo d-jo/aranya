@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link active">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Device Management</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="add-device">Add Device</button>
+                        <button class="tab-button" data-tab="remove-device">Remove Device</button>
+                        <button class="tab-button" data-tab="manage-roles">Manage Roles</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="add-device">
+                        <div class="card">
+                            <h3>Add Device to Team</h3>
+                            <p>Add a new device to your team by providing its cryptographic keys.</p>
+                            <form id="add-device-form">
+                                <div class="form-group">
+                                    <label for="add-device-team-id">Team ID:</label>
+                                    <input type="text" id="add-device-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="device-identity-key">Identity Key (Base64):</label>
+                                    <input type="text" id="device-identity-key" name="identity" required placeholder="Identity key">
+                                </div>
+                                <div class="form-group">
+                                    <label for="device-signing-key">Signing Key (Base64):</label>
+                                    <input type="text" id="device-signing-key" name="signing" required placeholder="Signing key">
+                                </div>
+                                <div class="form-group">
+                                    <label for="device-encoding-key">Encoding Key (Base64):</label>
+                                    <input type="text" id="device-encoding-key" name="encoding" required placeholder="Encoding key">
+                                </div>
+                                <button type="submit" class="button primary">Add Device</button>
+                            </form>
+                            <div id="add-device-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="remove-device">
+                        <div class="card">
+                            <h3>Remove Device from Team</h3>
+                            <p>Remove a device from your team.</p>
+                            <form id="remove-device-form">
+                                <div class="form-group">
+                                    <label for="remove-device-team-id">Team ID:</label>
+                                    <input type="text" id="remove-device-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="remove-device-id">Device ID:</label>
+                                    <input type="text" id="remove-device-id" name="device-id" required placeholder="Enter device ID">
+                                </div>
+                                <button type="submit" class="button warning">Remove Device</button>
+                            </form>
+                            <div id="remove-device-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="manage-roles">
+                        <div class="card">
+                            <h3>Manage Device Roles</h3>
+                            <p>Assign or revoke roles for devices in your team.</p>
+                            <form id="assign-role-form">
+                                <div class="form-group">
+                                    <label for="role-team-id">Team ID:</label>
+                                    <input type="text" id="role-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="role-device-id">Device ID:</label>
+                                    <input type="text" id="role-device-id" name="device-id" required placeholder="Enter device ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="role-select">Role:</label>
+                                    <select id="role-select" name="role" required>
+                                        <option value="owner">Owner</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="operator">Operator</option>
+                                        <option value="member">Member</option>
+                                    </select>
+                                </div>
+                                <div class="button-group">
+                                    <button type="button" class="button primary" id="assign-role-btn">Assign Role</button>
+                                    <button type="button" class="button warning" id="revoke-role-btn">Revoke Role</button>
+                                </div>
+                            </form>
+                            <div id="role-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/devices.js"></script>
+</body>
+</html> 

@@ -1,7 +1,20 @@
 use actix_files as fs;
-use actix_web::{App, HttpServer, web, middleware};
+use actix_web::{App, HttpServer, web, middleware, HttpResponse};
 use std::path::PathBuf;
 use std::env;
+use std::collections::HashMap;
+
+// Helper function to render HTML pages
+fn render_page(templates_dir: &PathBuf, page: &str) -> String {
+    let path = templates_dir.join(format!("{}.html", page));
+    match std::fs::read_to_string(&path) {
+        Ok(content) => content,
+        Err(e) => {
+            eprintln!("Warning: Could not read {}.html: {}", page, e);
+            format!("<html><body><h1>Error: Could not find page {}</h1></body></html>", page)
+        }
+    }
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -58,26 +71,78 @@ async fn main() -> std::io::Result<()> {
     println!("Using static directory: {}", static_dir.display());
 
     HttpServer::new(move || {
-        let html_content = match std::fs::read_to_string(templates_dir.join("index.html")) {
-            Ok(content) => content,
-            Err(e) => {
-                eprintln!("Warning: Could not read index.html: {}", e);
-                include_str!("../templates/index.html").to_string()
-            }
-        };
-        
         let api_base = api_address.clone();
         let static_dir = static_dir.clone();
+        let templates_dir = templates_dir.clone();
 
         App::new()
             .wrap(middleware::Logger::default())
-            // Serve the index.html file
-            .service(web::resource("/").to(move || {
-                let html = html_content.clone();
-                async move {
-                    actix_web::HttpResponse::Ok()
-                        .content_type("text/html")
-                        .body(html)
+            // Home page - serve index.html
+            .service(web::resource("/").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "index");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
+            // Serve pages for each main section
+            .service(web::resource("/dashboard").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "dashboard");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
+            .service(web::resource("/teams").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "teams");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
+            .service(web::resource("/devices").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "devices");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
+            .service(web::resource("/networking").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "networking");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
+                }
+            }))
+            .service(web::resource("/channels").to({
+                let templates_dir = templates_dir.clone();
+                move || {
+                    let html = render_page(&templates_dir, "channels");
+                    async move {
+                        HttpResponse::Ok()
+                            .content_type("text/html")
+                            .body(html)
+                    }
                 }
             }))
             // Serve static files

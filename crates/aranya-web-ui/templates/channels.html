@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Channels - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link active">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Communication Channels</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="channel-list">My Channels</button>
+                        <button class="tab-button" data-tab="create-channel">Create Channel</button>
+                        <button class="tab-button" data-tab="manage-channels">Manage Channels</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="channel-list">
+                        <div class="card">
+                            <h3>Active Channels</h3>
+                            <div id="channels-container">
+                                <p>Loading channels...</p>
+                            </div>
+                            
+                            <div class="channel-actions">
+                                <button id="poll-messages-btn" class="button primary">Poll for New Messages</button>
+                                <div id="poll-result" class="result-box hidden"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="card" id="channel-messages">
+                            <h3>Channel Messages</h3>
+                            <div class="selected-channel-info">
+                                <p>Select a channel to view messages</p>
+                            </div>
+                            <div class="message-list">
+                                <!-- Messages will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="create-channel">
+                        <div class="card">
+                            <h3>Create New Channel</h3>
+                            <p>Create a communication channel with another device in your team.</p>
+                            <form id="create-channel-form">
+                                <div class="form-group">
+                                    <label for="channel-team-id">Team ID:</label>
+                                    <input type="text" id="channel-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="channel-peer">Peer Identifier:</label>
+                                    <input type="text" id="channel-peer" name="peer" required placeholder="Enter peer identifier">
+                                </div>
+                                <div class="form-group">
+                                    <label for="channel-label">Channel Label:</label>
+                                    <input type="text" id="channel-label" name="label" required placeholder="Enter channel label">
+                                </div>
+                                <button type="submit" class="button primary">Create Channel</button>
+                            </form>
+                            <div id="create-channel-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="manage-channels">
+                        <div class="card">
+                            <h3>Send Data</h3>
+                            <p>Send data through an existing channel.</p>
+                            <form id="send-data-form">
+                                <div class="form-group">
+                                    <label for="send-channel-id">Channel ID:</label>
+                                    <input type="text" id="send-channel-id" name="channel-id" required placeholder="Enter channel ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="send-data">Data:</label>
+                                    <textarea id="send-data" name="data" rows="4" required placeholder="Enter data to send"></textarea>
+                                </div>
+                                <button type="submit" class="button primary">Send Data</button>
+                            </form>
+                            <div id="send-data-result" class="result-box hidden"></div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Delete Channel</h3>
+                            <p>Remove a communication channel.</p>
+                            <form id="delete-channel-form">
+                                <div class="form-group">
+                                    <label for="delete-channel-id">Channel ID:</label>
+                                    <input type="text" id="delete-channel-id" name="channel-id" required placeholder="Enter channel ID to delete">
+                                </div>
+                                <button type="submit" class="button warning">Delete Channel</button>
+                            </form>
+                            <div id="delete-channel-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/channels.js"></script>
+</body>
+</html> 

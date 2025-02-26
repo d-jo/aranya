@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link active">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Teams Management</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="create-team">Create Team</button>
+                        <button class="tab-button" data-tab="join-team">Join Team</button>
+                        <button class="tab-button" data-tab="manage-team">Manage Team</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="create-team">
+                        <div class="card">
+                            <h3>Create New Team</h3>
+                            <p>Create a new team that you will own and can invite others to join.</p>
+                            <button id="create-team-btn" class="button primary">Create Team</button>
+                            <div id="new-team-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="join-team">
+                        <div class="card">
+                            <h3>Join Existing Team</h3>
+                            <p>Join a team by entering the team ID provided by the team owner.</p>
+                            <form id="add-team-form">
+                                <div class="form-group">
+                                    <label for="team-id">Team ID:</label>
+                                    <input type="text" id="team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <button type="submit" class="button primary">Join Team</button>
+                            </form>
+                            <div id="add-team-result" class="result-box hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="manage-team">
+                        <div class="card">
+                            <h3>Your Teams</h3>
+                            <div id="team-list">
+                                <p>Loading teams...</p>
+                            </div>
+                            
+                            <div class="team-details hidden" id="team-details">
+                                <h4>Team Details</h4>
+                                <div class="team-info">
+                                    <p><strong>Team ID:</strong> <span id="detail-team-id"></span></p>
+                                    <p><strong>Your Role:</strong> <span id="detail-role"></span></p>
+                                    <p><strong>Members:</strong> <span id="detail-member-count"></span></p>
+                                </div>
+                                
+                                <h4>Team Operations</h4>
+                                <div class="form-group">
+                                    <label for="close-team-id">Team ID to Close:</label>
+                                    <input type="text" id="close-team-id" name="close-team-id" required placeholder="Enter team ID to close">
+                                </div>
+                                <button id="close-team-btn" class="button warning">Close Team</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/teams.js"></script>
+</body>
+</html> 

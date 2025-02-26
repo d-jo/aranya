@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Networking - Aranya Management Console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aranya Management Console</h1>
+            <div id="status-bar">
+                <span id="connection-status">Connecting...</span>
+            </div>
+        </header>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="/teams" class="nav-link">Teams</a></li>
+                <li><a href="/devices" class="nav-link">Devices</a></li>
+                <li><a href="/networking" class="nav-link active">Networking</a></li>
+                <li><a href="/channels" class="nav-link">Channels</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section class="content-section">
+                <h2>Network Configuration</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-button active" data-tab="sync-peers">Sync Peers</button>
+                        <button class="tab-button" data-tab="network-identifiers">Network Identifiers</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="sync-peers">
+                        <div class="card">
+                            <h3>Sync Peer Management</h3>
+                            <p>Configure synchronization peers for team data replication.</p>
+                            
+                            <h4>Add Sync Peer</h4>
+                            <form id="add-sync-peer-form">
+                                <div class="form-group">
+                                    <label for="sync-team-id">Team ID:</label>
+                                    <input type="text" id="sync-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sync-peer-addr">Peer Address:</label>
+                                    <input type="text" id="sync-peer-addr" name="addr" required placeholder="Enter peer address">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sync-interval">Sync Interval (seconds):</label>
+                                    <input type="number" id="sync-interval" name="interval_seconds" value="60" min="1" required>
+                                </div>
+                                <button type="submit" class="button primary">Add Sync Peer</button>
+                            </form>
+                            <div id="add-peer-result" class="result-box hidden"></div>
+                            
+                            <h4>Remove Sync Peer</h4>
+                            <form id="remove-sync-peer-form">
+                                <div class="form-group">
+                                    <label for="remove-sync-team-id">Team ID:</label>
+                                    <input type="text" id="remove-sync-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="remove-sync-peer-addr">Peer Address:</label>
+                                    <input type="text" id="remove-sync-peer-addr" name="addr" required placeholder="Enter peer address">
+                                </div>
+                                <button type="submit" class="button warning">Remove Sync Peer</button>
+                            </form>
+                            <div id="remove-peer-result" class="result-box hidden"></div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Current Sync Peers</h3>
+                            <div id="sync-peer-list">
+                                <p>No sync peers configured</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="network-identifiers">
+                        <div class="card">
+                            <h3>Network Identifier Management</h3>
+                            <p>Manage network identifiers for devices in your teams.</p>
+                            
+                            <form id="net-identifier-form">
+                                <div class="form-group">
+                                    <label for="net-id-team-id">Team ID:</label>
+                                    <input type="text" id="net-id-team-id" name="team-id" required placeholder="Enter team ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="net-id-device-id">Device ID:</label>
+                                    <input type="text" id="net-id-device-id" name="device-id" required placeholder="Enter device ID">
+                                </div>
+                                <div class="form-group">
+                                    <label for="net-identifier">Network Identifier:</label>
+                                    <input type="text" id="net-identifier" name="net-identifier" required placeholder="Enter network identifier">
+                                </div>
+                                <div class="button-group">
+                                    <button type="button" class="button primary" id="assign-net-id-btn">Assign Identifier</button>
+                                    <button type="button" class="button warning" id="remove-net-id-btn">Remove Identifier</button>
+                                </div>
+                            </form>
+                            <div id="net-id-result" class="result-box hidden"></div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Current Network Identifiers</h3>
+                            <div id="net-id-list">
+                                <p>No network identifiers configured</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Aranya Management Console &copy; 2023</p>
+        </footer>
+    </div>
+    
+    <div id="toast" class="toast hidden"></div>
+    
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/networking.js"></script>
+</body>
+</html> 
