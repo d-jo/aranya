@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::sync::Mutex;
 use std::time::Duration;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, instrument, span, Level, Instrument as _};
 
 // AppState to hold the shared Aranya client
 pub struct AppState {
@@ -49,25 +49,25 @@ struct AfcIdResponse {
 }
 
 // Request bodies
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct AddSyncPeerRequest {
     addr: String,
     team_id: String,
     interval_seconds: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct RemoveSyncPeerRequest {
     addr: String,
     team_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct TeamRequest {
     team_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct AddDeviceToTeamRequest {
     team_id: String,
     identity: String,
@@ -75,46 +75,46 @@ struct AddDeviceToTeamRequest {
     encryption: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct DeviceRoleRequest {
     team_id: String,
     device_id: String,
     role: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct NetIdentifierRequest {
     team_id: String,
     device_id: String,
     net_identifier: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct LabelRequest {
     team_id: String,
     label: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct DeviceLabelRequest {
     team_id: String,
     device_id: String,
     label: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct CreateChannelRequest {
     team_id: String,
     peer: String,
     label: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct ChannelRequest {
     channel_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct SendDataRequest {
     channel_id: String,
     data: String,
@@ -164,7 +164,9 @@ fn parse_label(label: &str) -> Result<Label, ApiError> {
 // API endpoints
 // Health check
 #[get("/health")]
+#[instrument(name = "health_check", level = "debug")]
 pub async fn health_check() -> impl Responder {
+    debug!("Health check endpoint called");
     HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: "Aranya REST API is running".to_string(),
@@ -173,14 +175,31 @@ pub async fn health_check() -> impl Responder {
 
 // Get Aranya local address
 #[get("/address")]
+#[instrument(name = "get_aranya_address", skip(data), level = "debug")]
 pub async fn get_address(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Getting Aranya local address");
     let addr = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.aranya_local_addr().await?
+        
+        // We exit the lock span here by dropping _guard and create a new span for the operation
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "get_local_addr");
+        async {
+            client.aranya_local_addr().await.map_err(|e| {
+                error!("Failed to get Aranya local address: {}", e);
+                e
+            })
+        }.instrument(span).await?
     };
 
+    info!("Aranya local address: {}", addr);
     Ok(HttpResponse::Ok().json(SocketAddressResponse {
         address: addr.to_string(),
     }))
@@ -188,14 +207,30 @@ pub async fn get_address(data: web::Data<AppState>) -> Result<impl Responder, Ap
 
 // Get AFC local address
 #[get("/afc/address")]
+#[instrument(name = "get_afc_address", skip(data), level = "debug")]
 pub async fn get_afc_address(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Getting AFC local address");
     let addr = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.afc_local_addr().await?
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "get_afc_addr");
+        async {
+            client.afc_local_addr().await.map_err(|e| {
+                error!("Failed to get AFC local address: {}", e);
+                e
+            })
+        }.instrument(span).await?
     };
 
+    info!("AFC local address: {}", addr);
     Ok(HttpResponse::Ok().json(SocketAddressResponse {
         address: addr.to_string(),
     }))
@@ -203,14 +238,30 @@ pub async fn get_afc_address(data: web::Data<AppState>) -> Result<impl Responder
 
 // Get device ID
 #[get("/device/id")]
+#[instrument(name = "get_device_id", skip(data), level = "debug")]
 pub async fn get_device_id(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Getting device ID");
     let device_id = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.get_device_id().await?
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "fetch_device_id");
+        async {
+            client.get_device_id().await.map_err(|e| {
+                error!("Failed to get device ID: {}", e);
+                e
+            })
+        }.instrument(span).await?
     };
 
+    info!("Device ID: {}", device_id);
     Ok(HttpResponse::Ok().json(DeviceIdResponse {
         device_id: device_id.to_string(),
     }))
@@ -218,14 +269,30 @@ pub async fn get_device_id(data: web::Data<AppState>) -> Result<impl Responder, 
 
 // Get key bundle
 #[get("/device/keys")]
+#[instrument(name = "get_key_bundle", skip(data), level = "debug")]
 pub async fn get_key_bundle(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Getting key bundle");
     let key_bundle = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.get_key_bundle().await?
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "fetch_key_bundle");
+        async {
+            client.get_key_bundle().await.map_err(|e| {
+                error!("Failed to get key bundle: {}", e);
+                e
+            })
+        }.instrument(span).await?
     };
 
+    info!("Key bundle retrieved successfully");
     Ok(HttpResponse::Ok().json(KeyBundleResponse {
         identity: base64::encode(&key_bundle.identity),
         signing: base64::encode(&key_bundle.signing),
@@ -235,33 +302,73 @@ pub async fn get_key_bundle(data: web::Data<AppState>) -> Result<impl Responder,
 
 // Team operations
 #[post("/team")]
+#[instrument(name = "create_team", skip(data), level = "debug")]
 pub async fn create_team(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Creating new team");
     let team_id = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.create_team().await?
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "team_creation");
+        async {
+            client.create_team().await.map_err(|e| {
+                error!("Failed to create team: {}", e);
+                e
+            })
+        }.instrument(span).await?
     };
 
+    info!("Team created successfully with ID: {}", team_id);
     Ok(HttpResponse::Ok().json(TeamIdResponse {
         team_id: team_id.to_string(),
     }))
 }
 
 #[post("/team/add")]
+#[instrument(name = "add_team", skip(data), fields(team_id = %req.team_id), level = "debug")]
 pub async fn add_team(
     data: web::Data<AppState>,
     req: web::Json<TeamRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
+    let team_id_str = &req.team_id;
+    debug!("Adding team with ID: {}", team_id_str);
+    
+    let parse_span = span!(Level::DEBUG, "parse_team_id", team_id = %team_id_str);
+    let team_id = parse_span.in_scope(|| {
+        parse_team_id(team_id_str).map_err(|e| {
+            error!("Failed to parse team ID '{}': {}", team_id_str, e);
+            e
+        })
+    })?;
 
     {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.add_team(team_id).await?;
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "add_team_op", team_id = %team_id);
+        async {
+            client.add_team(team_id).await.map_err(|e| {
+                error!("Failed to add team {}: {}", team_id, e);
+                e
+            })
+        }.instrument(span).await?;
     }
 
+    info!("Team {} added successfully", team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Team {} added successfully", team_id),
@@ -273,16 +380,27 @@ pub async fn close_team(
     data: web::Data<AppState>,
     path: web::Path<String>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&path.into_inner())?;
+    let team_id_str = path.into_inner();
+    debug!("Closing team with ID: {}", team_id_str);
+    
+    let team_id = parse_team_id(&team_id_str).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", team_id_str, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.close_team().await?;
+        team.close_team().await.map_err(|e| {
+            error!("Failed to close team {}: {}", team_id, e);
+            e
+        })?;
     }
 
+    info!("Team {} closed successfully", team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Team {} closed successfully", team_id),
@@ -295,18 +413,33 @@ pub async fn add_sync_peer(
     data: web::Data<AppState>,
     req: web::Json<AddSyncPeerRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let addr = parse_addr(&req.addr)?;
-    let team_id = parse_team_id(&req.team_id)?;
+    debug!("Adding sync peer: {} for team: {}", req.addr, req.team_id);
+    
+    let addr = parse_addr(&req.addr).map_err(|e| {
+        error!("Failed to parse address '{}': {}", req.addr, e);
+        e
+    })?;
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
     let interval = Duration::from_secs(req.interval_seconds);
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.add_sync_peer(addr, interval).await?;
+        team.add_sync_peer(addr, interval).await.map_err(|e| {
+            error!("Failed to add sync peer {} to team {}: {}", addr, team_id, e);
+            e
+        })?;
     }
 
+    info!("Sync peer {} added to team {} with interval of {}s", addr, team_id, req.interval_seconds);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Sync peer {} added successfully", req.addr),
@@ -318,17 +451,31 @@ pub async fn remove_sync_peer(
     data: web::Data<AppState>,
     req: web::Json<RemoveSyncPeerRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let addr = parse_addr(&req.addr)?;
-    let team_id = parse_team_id(&req.team_id)?;
+    debug!("Removing sync peer: {} from team: {}", req.addr, req.team_id);
+    
+    let addr = parse_addr(&req.addr).map_err(|e| {
+        error!("Failed to parse address '{}': {}", req.addr, e);
+        e
+    })?;
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.remove_sync_peer(addr).await?;
+        team.remove_sync_peer(addr).await.map_err(|e| {
+            error!("Failed to remove sync peer {} from team {}: {}", addr, team_id, e);
+            e
+        })?;
     }
 
+    info!("Sync peer {} removed from team {}", addr, team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Sync peer {} removed successfully", req.addr),
@@ -341,16 +488,33 @@ pub async fn add_device_to_team(
     data: web::Data<AppState>,
     req: web::Json<AddDeviceToTeamRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
+    debug!("Adding device to team: {}", req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
     
     let identity = base64::decode(&req.identity)
-        .map_err(|_| ApiError::BadRequest("Invalid identity encoding".to_string()))?;
+        .map_err(|_| {
+            let err = ApiError::BadRequest("Invalid identity encoding".to_string());
+            error!("Failed to decode identity base64: {}", err);
+            err
+        })?;
     
     let signing = base64::decode(&req.signing)
-        .map_err(|_| ApiError::BadRequest("Invalid signing encoding".to_string()))?;
+        .map_err(|_| {
+            let err = ApiError::BadRequest("Invalid signing encoding".to_string());
+            error!("Failed to decode signing base64: {}", err);
+            err
+        })?;
     
     let encryption = base64::decode(&req.encryption)
-        .map_err(|_| ApiError::BadRequest("Invalid encryption encoding".to_string()))?;
+        .map_err(|_| {
+            let err = ApiError::BadRequest("Invalid encryption encoding".to_string());
+            error!("Failed to decode encryption base64: {}", err);
+            err
+        })?;
 
     let key_bundle = KeyBundle {
         identity,
@@ -360,12 +524,17 @@ pub async fn add_device_to_team(
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.add_device_to_team(key_bundle).await?;
+        team.add_device_to_team(key_bundle).await.map_err(|e| {
+            error!("Failed to add device to team {}: {}", team_id, e);
+            e
+        })?;
     }
 
+    info!("Device added to team {} successfully", team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: "Device added to team successfully".to_string(),
@@ -378,17 +547,31 @@ pub async fn remove_device_from_team(
     path: web::Path<(String, String)>,
 ) -> Result<impl Responder, ApiError> {
     let (team_id_str, device_id_str) = path.into_inner();
-    let team_id = parse_team_id(&team_id_str)?;
-    let device_id = parse_device_id(&device_id_str)?;
+    debug!("Removing device {} from team {}", device_id_str, team_id_str);
+    
+    let team_id = parse_team_id(&team_id_str).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", team_id_str, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&device_id_str).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", device_id_str, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.remove_device_from_team(device_id).await?;
+        team.remove_device_from_team(device_id).await.map_err(|e| {
+            error!("Failed to remove device {} from team {}: {}", device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Device {} removed from team {} successfully", device_id_str, team_id_str);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Device {} removed from team {}", device_id_str, team_id_str),
@@ -401,18 +584,37 @@ pub async fn assign_role(
     data: web::Data<AppState>,
     req: web::Json<DeviceRoleRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
-    let role = parse_role(&req.role)?;
+    debug!("Assigning role '{}' to device {} in team {}", req.role, req.device_id, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&req.device_id).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", req.device_id, e);
+        e
+    })?;
+    
+    let role = parse_role(&req.role).map_err(|e| {
+        error!("Failed to parse role '{}': {}", req.role, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.assign_role(device_id, role).await?;
+        team.assign_role(device_id, role).await.map_err(|e| {
+            error!("Failed to assign role '{}' to device {} in team {}: {}", 
+                req.role, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Role '{}' assigned to device {} in team {}", req.role, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Role '{}' assigned to device {} in team {}", req.role, req.device_id, req.team_id),
@@ -424,18 +626,37 @@ pub async fn revoke_role(
     data: web::Data<AppState>,
     req: web::Json<DeviceRoleRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
-    let role = parse_role(&req.role)?;
+    debug!("Revoking role '{}' from device {} in team {}", req.role, req.device_id, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&req.device_id).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", req.device_id, e);
+        e
+    })?;
+    
+    let role = parse_role(&req.role).map_err(|e| {
+        error!("Failed to parse role '{}': {}", req.role, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.revoke_role(device_id, role).await?;
+        team.revoke_role(device_id, role).await.map_err(|e| {
+            error!("Failed to revoke role '{}' from device {} in team {}: {}", 
+                req.role, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Role '{}' revoked from device {} in team {}", req.role, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Role '{}' revoked from device {} in team {}", req.role, req.device_id, req.team_id),
@@ -448,18 +669,36 @@ pub async fn assign_net_identifier(
     data: web::Data<AppState>,
     req: web::Json<NetIdentifierRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
+    debug!("Assigning net identifier '{}' to device {} in team {}", 
+        req.net_identifier, req.device_id, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&req.device_id).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", req.device_id, e);
+        e
+    })?;
+    
     let net_identifier = NetIdentifier(req.net_identifier.clone());
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.assign_net_identifier(device_id, net_identifier).await?;
+        team.assign_net_identifier(device_id, net_identifier.clone()).await.map_err(|e| {
+            error!("Failed to assign net identifier '{}' to device {} in team {}: {}", 
+                req.net_identifier, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Net identifier '{}' assigned to device {} in team {}", 
+        req.net_identifier, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Network identifier '{}' assigned to device {} in team {}", 
@@ -472,18 +711,36 @@ pub async fn remove_net_identifier(
     data: web::Data<AppState>,
     req: web::Json<NetIdentifierRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
+    debug!("Removing net identifier '{}' from device {} in team {}", 
+        req.net_identifier, req.device_id, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&req.device_id).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", req.device_id, e);
+        e
+    })?;
+    
     let net_identifier = NetIdentifier(req.net_identifier.clone());
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.remove_net_identifier(device_id, net_identifier).await?;
+        team.remove_net_identifier(device_id, net_identifier.clone()).await.map_err(|e| {
+            error!("Failed to remove net identifier '{}' from device {} in team {}: {}", 
+                req.net_identifier, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Net identifier '{}' removed from device {} in team {}", 
+        req.net_identifier, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Network identifier '{}' removed from device {} in team {}", 
@@ -497,17 +754,31 @@ pub async fn create_label(
     data: web::Data<AppState>,
     req: web::Json<LabelRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let label = parse_label(&req.label)?;
+    debug!("Creating label '{}' in team {}", req.label, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let label = parse_label(&req.label).map_err(|e| {
+        error!("Failed to parse label '{}': {}", req.label, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.create_label(label).await?;
+        team.create_label(label).await.map_err(|e| {
+            error!("Failed to create label '{}' in team {}: {}", req.label, team_id, e);
+            e
+        })?;
     }
 
+    info!("Label '{}' created in team {}", req.label, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Label '{}' created in team {}", req.label, req.team_id),
@@ -520,17 +791,31 @@ pub async fn delete_label(
     path: web::Path<(String, String)>,
 ) -> Result<impl Responder, ApiError> {
     let (team_id_str, label_str) = path.into_inner();
-    let team_id = parse_team_id(&team_id_str)?;
-    let label = parse_label(&label_str)?;
+    debug!("Deleting label '{}' from team {}", label_str, team_id_str);
+    
+    let team_id = parse_team_id(&team_id_str).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", team_id_str, e);
+        e
+    })?;
+    
+    let label = parse_label(&label_str).map_err(|e| {
+        error!("Failed to parse label '{}': {}", label_str, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.delete_label(label).await?;
+        team.delete_label(label).await.map_err(|e| {
+            error!("Failed to delete label '{}' from team {}: {}", label_str, team_id, e);
+            e
+        })?;
     }
 
+    info!("Label '{}' deleted from team {}", label_str, team_id_str);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Label '{}' deleted from team {}", label_str, team_id_str),
@@ -542,18 +827,39 @@ pub async fn assign_label(
     data: web::Data<AppState>,
     req: web::Json<DeviceLabelRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
-    let label = parse_label(&req.label)?;
+    debug!("Assigning label '{}' to device {} in team {}", 
+        req.label, req.device_id, req.team_id);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
+    let device_id = parse_device_id(&req.device_id).map_err(|e| {
+        error!("Failed to parse device ID '{}': {}", req.device_id, e);
+        e
+    })?;
+    
+    let label = parse_label(&req.label).map_err(|e| {
+        error!("Failed to parse label '{}': {}", req.label, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
         let mut team = client.team(team_id);
-        team.assign_label(device_id, label).await?;
+        team.assign_label(device_id, label).await.map_err(|e| {
+            error!("Failed to assign label '{}' to device {} in team {}: {}", 
+                req.label, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Label '{}' assigned to device {} in team {}", 
+        req.label, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Label '{}' assigned to device {} in team {}", 
@@ -562,22 +868,67 @@ pub async fn assign_label(
 }
 
 #[post("/team/label/revoke")]
+#[instrument(name = "revoke_label", skip(data), fields(
+    team_id = %req.team_id, 
+    device_id = %req.device_id, 
+    label = %req.label
+), level = "debug")]
 pub async fn revoke_label(
     data: web::Data<AppState>,
     req: web::Json<DeviceLabelRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
-    let device_id = parse_device_id(&req.device_id)?;
-    let label = parse_label(&req.label)?;
+    debug!("Revoking label '{}' from device {} in team {}", 
+        req.label, req.device_id, req.team_id);
+    
+    // Parse in a span to track parsing time separately
+    let parse_span = span!(Level::DEBUG, "parse_parameters");
+    let (team_id, device_id, label) = parse_span.in_scope(|| -> Result<_, ApiError> {
+        let team_id = parse_team_id(&req.team_id).map_err(|e| {
+            error!("Failed to parse team ID '{}': {}", req.team_id, e);
+            e
+        })?;
+        
+        let device_id = parse_device_id(&req.device_id).map_err(|e| {
+            error!("Failed to parse device ID '{}': {}", req.device_id, e);
+            e
+        })?;
+        
+        let label = parse_label(&req.label).map_err(|e| {
+            error!("Failed to parse label '{}': {}", req.label, e);
+            e
+        })?;
+        
+        Ok((team_id, device_id, label))
+    })?;
 
     {
-        let mut client = data.client.lock().map_err(|e| {
-            ApiError::InternalError(format!("Failed to lock client: {}", e))
+        let client_span = span!(Level::DEBUG, "lock_client");
+        let mut client = client_span.in_scope(|| -> Result<_, ApiError> {
+            data.client.lock().map_err(|e| {
+                error!("Failed to lock client: {}", e);
+                ApiError::InternalError(format!("Failed to lock client: {}", e))
+            })
         })?;
+        
+        let op_span = span!(Level::DEBUG, "revoke_label_op", 
+            team_id = %team_id, 
+            device_id = %device_id, 
+            label = %req.label
+        );
+        
+        // Create team instance with proper mutability
         let mut team = client.team(team_id);
-        team.revoke_label(device_id, label).await?;
+        
+        // Use instrument for the async operation
+        team.revoke_label(device_id, label).instrument(op_span).await.map_err(|e| {
+            error!("Failed to revoke label '{}' from device {} in team {}: {}", 
+                req.label, device_id, team_id, e);
+            e
+        })?;
     }
 
+    info!("Label '{}' revoked from device {} in team {}", 
+        req.label, req.device_id, req.team_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Label '{}' revoked from device {} in team {}", 
@@ -591,17 +942,35 @@ pub async fn create_channel(
     data: web::Data<AppState>,
     req: web::Json<CreateChannelRequest>,
 ) -> Result<impl Responder, ApiError> {
-    let team_id = parse_team_id(&req.team_id)?;
+    debug!("Creating channel in team {} with peer {} and label {}", 
+        req.team_id, req.peer, req.label);
+    
+    let team_id = parse_team_id(&req.team_id).map_err(|e| {
+        error!("Failed to parse team ID '{}': {}", req.team_id, e);
+        e
+    })?;
+    
     let peer = NetIdentifier(req.peer.clone());
-    let label = parse_label(&req.label)?;
+    
+    let label = parse_label(&req.label).map_err(|e| {
+        error!("Failed to parse label '{}': {}", req.label, e);
+        e
+    })?;
 
     let afc_id = {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.create_bidi_channel(team_id, peer, label).await?
+        client.create_bidi_channel(team_id, peer.clone(), label).await.map_err(|e| {
+            error!("Failed to create channel in team {} with peer {} and label {}: {}", 
+                team_id, req.peer, req.label, e);
+            e
+        })?
     };
 
+    info!("Channel created in team {} with peer {} and label {}, afc_id: {}", 
+        req.team_id, req.peer, req.label, afc_id);
     Ok(HttpResponse::Ok().json(AfcIdResponse {
         afc_id: afc_id.to_string(),
     }))
@@ -614,15 +983,25 @@ pub async fn delete_channel(
 ) -> Result<impl Responder, ApiError> {
     // Since we can't properly parse AfcId in this version, this endpoint will always return an error
     let channel_id_str = path.into_inner();
-    let channel_id = parse_afc_id(&channel_id_str)?;
+    debug!("Deleting channel {}", channel_id_str);
+    
+    let channel_id = parse_afc_id(&channel_id_str).map_err(|e| {
+        error!("Failed to parse channel ID '{}': {}", channel_id_str, e);
+        e
+    })?;
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.delete_channel(channel_id).await?;
+        client.delete_channel(channel_id).await.map_err(|e| {
+            error!("Failed to delete channel {}: {}", channel_id_str, e);
+            e
+        })?;
     }
 
+    info!("Channel {} deleted successfully", channel_id_str);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Channel {} deleted successfully", channel_id_str),
@@ -635,16 +1014,28 @@ pub async fn send_data(
     req: web::Json<SendDataRequest>,
 ) -> Result<impl Responder, ApiError> {
     // Since we can't properly parse AfcId in this version, this endpoint will always return an error
-    let channel_id = parse_afc_id(&req.channel_id)?;
+    debug!("Sending data on channel {}", req.channel_id);
+    
+    let channel_id = parse_afc_id(&req.channel_id).map_err(|e| {
+        error!("Failed to parse channel ID '{}': {}", req.channel_id, e);
+        e
+    })?;
+    
     let data_bytes = req.data.as_bytes();
+    let data_len = data_bytes.len();
 
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.send_data(channel_id, data_bytes).await?;
+        client.send_data(channel_id, data_bytes).await.map_err(|e| {
+            error!("Failed to send data on channel {}: {}", req.channel_id, e);
+            e
+        })?;
     }
 
+    info!("Data ({} bytes) sent on channel {} successfully", data_len, req.channel_id);
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: format!("Data sent on channel {} successfully", req.channel_id),
@@ -654,13 +1045,20 @@ pub async fn send_data(
 // Poll AFC for new messages
 #[get("/channel/poll")]
 pub async fn poll_messages(data: web::Data<AppState>) -> Result<impl Responder, ApiError> {
+    debug!("Polling AFC for new messages");
+    
     {
         let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
             ApiError::InternalError(format!("Failed to lock client: {}", e))
         })?;
-        client.poll().await?;
+        client.poll().await.map_err(|e| {
+            error!("Failed to poll AFC: {}", e);
+            e
+        })?;
     }
 
+    info!("AFC polled successfully");
     Ok(HttpResponse::Ok().json(SuccessResponse {
         success: true,
         message: "AFC polled successfully".to_string(),
@@ -669,6 +1067,10 @@ pub async fn poll_messages(data: web::Data<AppState>) -> Result<impl Responder, 
 
 // Collect all the routes
 pub fn configure_routes(cfg: &mut web::ServiceConfig) {
+    let span = span!(Level::INFO, "configure_routes");
+    let _guard = span.enter();
+    
+    info!("Configuring REST API routes");
     cfg.service(
         web::scope("/api/v1")
             .service(health_check)
@@ -696,4 +1098,5 @@ pub fn configure_routes(cfg: &mut web::ServiceConfig) {
             .service(send_data)
             .service(poll_messages)
     );
+    debug!("REST API routes configured");
 } 
