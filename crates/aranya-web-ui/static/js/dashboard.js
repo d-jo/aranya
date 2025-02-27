@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const identityKey = document.getElementById('identity-key');
     const signingKey = document.getElementById('signing-key');
     const encryptionKey = document.getElementById('encryption-key');
+    const copyFullBundleBtn = document.getElementById('copy-full-bundle-btn');
     const refreshStatusBtn = document.getElementById('refresh-status-btn');
     const activityLog = document.getElementById('activity-log');
     const copyButtons = document.querySelectorAll('.copy-btn');
@@ -41,9 +42,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadKeyBundle() {
         try {
             const data = await fetchWithErrorHandling(`${API_BASE_URL}/device/keys`);
-            identityKey.textContent = data.identity;
-            signingKey.textContent = data.signing;
-            encryptionKey.textContent = data.encryption;
+            
+            // Store the full data for later use
+            keyBundle.dataset.fullBundle = JSON.stringify(data);
+            
+            // Handle the new response format with nested keys object
+            if (data.keys) {
+                identityKey.textContent = data.keys.identity;
+                signingKey.textContent = data.keys.signing;
+                encryptionKey.textContent = data.keys.encryption;
+            } else {
+                // Fallback for legacy API format
+                identityKey.textContent = data.identity || 'Not available';
+                signingKey.textContent = data.signing || 'Not available';
+                encryptionKey.textContent = data.encryption || 'Not available';
+            }
             
             addActivityLogEntry('Key bundle loaded');
         } catch (error) {
@@ -51,6 +64,61 @@ document.addEventListener('DOMContentLoaded', async () => {
             signingKey.textContent = 'Failed to load';
             encryptionKey.textContent = 'Failed to load';
         }
+    }
+    
+    // Copy the full key bundle
+    function copyFullKeyBundle() {
+        try {
+            // Make sure the keys are loaded
+            if (identityKey.textContent === 'Loading...' || 
+                identityKey.textContent === 'Failed to load') {
+                showToast('Keys not loaded yet', true);
+                return;
+            }
+            
+            let bundleData;
+            
+            // Check if we have the full bundle data from the API
+            if (keyBundle.dataset.fullBundle) {
+                try {
+                    // Use the bundle directly from the API if available
+                    bundleData = keyBundle.dataset.fullBundle;
+                } catch (parseError) {
+                    console.error('Error parsing stored bundle:', parseError);
+                    // Fall back to creating our own bundle
+                    bundleData = createBundleFromElements();
+                }
+            } else {
+                // Create bundle from the individual elements
+                bundleData = createBundleFromElements();
+            }
+            
+            navigator.clipboard.writeText(bundleData)
+                .then(() => {
+                    showToast('Full key bundle copied to clipboard!');
+                    addActivityLogEntry('Full key bundle copied to clipboard');
+                })
+                .catch(err => {
+                    console.error('Failed to copy full key bundle: ', err);
+                    showToast('Failed to copy full key bundle', true);
+                });
+        } catch (error) {
+            console.error('Error formatting key bundle:', error);
+            showToast('Failed to format key bundle', true);
+        }
+    }
+    
+    // Create a bundle from the individual key elements
+    function createBundleFromElements() {
+        return JSON.stringify({
+            type: "aranya_key_bundle",
+            keys: {
+                identity: identityKey.textContent,
+                signing: signingKey.textContent,
+                encryption: encryptionKey.textContent
+            },
+            timestamp: new Date().toISOString()
+        }, null, 2);
     }
     
     // Add entry to activity log
@@ -92,6 +160,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
         });
     });
+    
+    // Event: Copy full bundle button
+    copyFullBundleBtn.addEventListener('click', copyFullKeyBundle);
     
     // Event: Toggle key bundle visibility
     viewKeysBtn.addEventListener('click', () => {

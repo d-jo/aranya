@@ -42,6 +42,12 @@
                         <div class="card">
                             <h3>Add Device to Team</h3>
                             <p>Add a new device to your team by providing its cryptographic keys.</p>
+                            
+                            <div class="input-method-toggle">
+                                <button class="toggle-button active" data-method="individual">Individual Keys</button>
+                                <button class="toggle-button" data-method="bundle">Full Key Bundle</button>
+                            </div>
+                            
                             <form id="add-device-form">
                                 <div class="form-group">
                                     <label for="team-select">Team ID:</label>
@@ -49,18 +55,42 @@
                                         <option value="">Select a team</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="device-identity-key">Identity Key (Base64):</label>
-                                    <input type="text" id="device-identity-key" name="identity" required placeholder="Identity key">
+                                
+                                <div id="individual-keys-input">
+                                    <div class="form-group">
+                                        <label for="device-identity-key">Identity Key (Base64):</label>
+                                        <input type="text" id="device-identity-key" name="identity" required placeholder="Identity key">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="device-signing-key">Signing Key (Base64):</label>
+                                        <input type="text" id="device-signing-key" name="signing" required placeholder="Signing key">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="device-encryption-key">Encryption Key (Base64):</label>
+                                        <input type="text" id="device-encryption-key" name="encryption" required placeholder="Encryption key">
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="device-signing-key">Signing Key (Base64):</label>
-                                    <input type="text" id="device-signing-key" name="signing" required placeholder="Signing key">
+                                
+                                <div id="bundle-input" class="hidden">
+                                    <div class="form-group">
+                                        <label for="key-bundle-json">Full Key Bundle (JSON):</label>
+                                        <textarea id="key-bundle-json" name="key-bundle-json" placeholder="Paste the full key bundle JSON here"></textarea>
+                                        <div class="form-help">
+                                            Paste the full key bundle JSON copied from the dashboard.
+                                        </div>
+                                    </div>
+                                    <div class="key-bundle-guide">
+                                        <h4>How to get a key bundle</h4>
+                                        <ol>
+                                            <li>Go to the <a href="/dashboard">Dashboard</a></li>
+                                            <li>Click on "View Key Bundle"</li>
+                                            <li>Click on "Copy Full Bundle"</li>
+                                            <li>Paste the copied bundle here</li>
+                                        </ol>
+                                    </div>
+                                    <button type="button" id="parse-bundle-btn" class="button secondary">Parse Bundle</button>
                                 </div>
-                                <div class="form-group">
-                                    <label for="device-encryption-key">Encryption Key (Base64):</label>
-                                    <input type="text" id="device-encryption-key" name="encryption" required placeholder="Encryption key">
-                                </div>
+                                
                                 <button type="submit" class="button primary">Add Device</button>
                             </form>
                             <div id="add-device-result" class="result-box hidden"></div>

@@ -890,4 +890,120 @@ td.actions {
     padding: 4px 8px;
     border-radius: 4px;
     margin-right: 12px;
+}
+
+/* Add styling for the copy-bundle-wrapper */
+.copy-bundle-wrapper {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-radius: 6px;
+    text-align: center;
+    border: 1px dashed #ccc;
+}
+
+.copy-bundle-wrapper small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.copy-bundle-wrapper .button {
+    background-color: #4a6da7;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-weight: bold;
+}
+
+.copy-bundle-wrapper .button:hover {
+    background-color: #3a5b95;
+}
+
+/* Add styling for the input-method-toggle */
+.input-method-toggle {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.toggle-button {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+    text-align: center;
+}
+
+.toggle-button:not(:last-child) {
+    border-right: 1px solid var(--border-color);
+}
+
+.toggle-button.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.toggle-button:hover:not(.active) {
+    background-color: #e8e8e8;
+}
+
+/* Style for the key bundle text area */
+#key-bundle-json {
+    min-height: 120px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 10px;
+    white-space: pre-wrap;
+}
+
+/* Button styles for secondary button */
+.button.secondary {
+    background-color: #6c757d;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.button.secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Key bundle guide styling */
+.key-bundle-guide {
+    margin: 15px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.key-bundle-guide h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.key-bundle-guide ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.key-bundle-guide li {
+    margin-bottom: 5px;
+}
+
+.key-bundle-guide a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.key-bundle-guide a:hover {
+    text-decoration: underline;
 } 

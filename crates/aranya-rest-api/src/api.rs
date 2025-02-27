@@ -8,6 +8,7 @@ use std::net::SocketAddr;
 use std::sync::Mutex;
 use std::time::Duration;
 use tracing::{debug, error, info, instrument, span, Level, Instrument as _};
+use serde_json::json;
 
 // AppState to hold the shared Aranya client
 pub struct AppState {
@@ -292,12 +293,42 @@ pub async fn get_key_bundle(data: web::Data<AppState>) -> Result<impl Responder,
         }.instrument(span).await?
     };
 
-    info!("Key bundle retrieved successfully");
-    Ok(HttpResponse::Ok().json(KeyBundleResponse {
-        identity: base64::encode(&key_bundle.identity),
-        signing: base64::encode(&key_bundle.signing),
-        encryption: base64::encode(&key_bundle.encryption),
-    }))
+    // Include device ID in response to aid in key organization
+    let device_id = {
+        let span = span!(Level::DEBUG, "lock_client");
+        let _guard = span.enter();
+        
+        let mut client = data.client.lock().map_err(|e| {
+            error!("Failed to lock client: {}", e);
+            ApiError::InternalError(format!("Failed to lock client: {}", e))
+        })?;
+        
+        drop(_guard);
+        
+        let span = span!(Level::DEBUG, "fetch_device_id");
+        async {
+            client.get_device_id().await.map_err(|e| {
+                error!("Failed to get device ID: {}", e);
+                e
+            })
+        }.instrument(span).await?
+    };
+
+    info!("Key bundle retrieved successfully for device {}", device_id);
+    
+    // Build a more informative response
+    let response = json!({
+        "type": "aranya_key_bundle",
+        "device_id": device_id.to_string(),
+        "keys": {
+            "identity": base64::encode(&key_bundle.identity),
+            "signing": base64::encode(&key_bundle.signing),
+            "encryption": base64::encode(&key_bundle.encryption)
+        },
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    });
+    
+    Ok(HttpResponse::Ok().json(response))
 }
 
 // Team operations
