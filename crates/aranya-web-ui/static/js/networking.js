@@ -17,13 +17,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add sync peer
     async function addSyncPeer(teamId, peerAddr, intervalSeconds) {
         try {
-            const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/${teamId}/sync/peer/add`, {
+            const data = await fetchWithErrorHandling(`${API_BASE_URL}/sync/peer`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     addr: peerAddr,
+                    team_id: teamId,
                     interval_seconds: parseInt(intervalSeconds)
                 })
             });
@@ -49,13 +50,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Remove sync peer
     async function removeSyncPeer(teamId, peerAddr) {
         try {
-            const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/${teamId}/sync/peer/remove`, {
-                method: 'POST',
+            // Use DELETE method with the correct URL format
+            const data = await fetchWithErrorHandling(`${API_BASE_URL}/sync/peer`, {
+                method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    addr: peerAddr
+                    addr: peerAddr,
+                    team_id: teamId
                 })
             });
             
