@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const removeSyncPeerForm = document.getElementById('remove-sync-peer-form');
     const removePeerResult = document.getElementById('remove-peer-result');
     const syncPeerList = document.getElementById('sync-peer-list');
+    const apiDaemonAddressElement = document.getElementById('api-daemon-address');
     
     const netIdentifierForm = document.getElementById('net-identifier-form');
     const netIdResult = document.getElementById('net-id-result');
@@ -190,6 +191,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
+    // Load the current API/Daemon address
+    async function loadCurrentApiAddress() {
+        try {
+            // Get the API URL directly from the stored configuration
+            const config = getConfig();
+            
+            if (config && config.apiUrl) {
+                // Extract just the host and port from the URL
+                try {
+                    const url = new URL(config.apiUrl);
+                    apiDaemonAddressElement.textContent = url.host;
+                    console.log("Successfully loaded API address:", url.host);
+                } catch (e) {
+                    // If it's not a valid URL, just show the raw value
+                    apiDaemonAddressElement.textContent = config.apiUrl;
+                    console.log("Using raw API URL:", config.apiUrl);
+                }
+            } else {
+                apiDaemonAddressElement.textContent = 'Address not available';
+                console.warn("No API URL found in configuration");
+            }
+        } catch (error) {
+            apiDaemonAddressElement.textContent = 'Address not available';
+            console.error('Failed to load API address:', error);
+        }
+    }
+    
     // Event: Add sync peer form submit
     addSyncPeerForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -251,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     formatNetworkIds();
     
     // Initial load
+    loadCurrentApiAddress();
     loadSyncPeers();
     loadNetIds();
     

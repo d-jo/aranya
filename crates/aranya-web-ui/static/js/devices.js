@@ -18,12 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const teamId = formData.get('team-id');
             
-            const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/${teamId}/device/add`, {
+            const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/device`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    team_id: teamId,
                     identity: formData.get('identity'),
                     signing: formData.get('signing'),
                     encryption: formData.get('encryption')
