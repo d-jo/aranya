@@ -3,8 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Team elements
     const createTeamBtn = document.getElementById('create-team-btn');
     const newTeamResult = document.getElementById('new-team-result');
-    const addTeamForm = document.getElementById('add-team-form');
-    const addTeamResult = document.getElementById('add-team-result');
     const closeTeamBtn = document.getElementById('close-team-btn');
     const teamList = document.getElementById('team-list');
     const teamDetails = document.getElementById('team-details');
@@ -53,35 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             newTeamResult.classList.remove('hidden');
             newTeamResult.textContent = `Failed to create team: ${error.message}`;
-        }
-    }
-    
-    // Join an existing team
-    async function addTeam(teamId) {
-        try {
-            const data = await fetchWithErrorHandling(`${API_BASE_URL}/team/add`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ team_id: teamId })
-            });
-            
-            addTeamResult.classList.remove('hidden');
-            addTeamResult.textContent = data.message || 'Team added successfully';
-            showToast('Team added successfully');
-            
-            // Add to localStorage
-            addTeamToStorage(teamId);
-            
-            // Update UI
-            updateTeamDisplays();
-            
-            // Update team list
-            loadTeams();
-        } catch (error) {
-            addTeamResult.classList.remove('hidden');
-            addTeamResult.textContent = `Failed to add team: ${error.message}`;
         }
     }
     
@@ -241,17 +210,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event: Create Team button click
     createTeamBtn.addEventListener('click', () => {
         createTeam();
-    });
-    
-    // Event: Add Team form submit
-    addTeamForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const teamId = document.getElementById('team-id').value;
-        if (!teamId) {
-            showToast('Please enter a team ID', true);
-            return;
-        }
-        addTeam(teamId);
     });
     
     // Event: Track Team form submit

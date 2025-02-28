@@ -33,12 +33,11 @@
                 
                 <div class="tab-container">
                     <div class="tabs">
-                        <button class="tab-button active" data-tab="create-team">Create Team</button>
-                        <button class="tab-button" data-tab="join-team">Join Team</button>
-                        <button class="tab-button" data-tab="manage-team">Manage Team</button>
+                        <button class="tab-button" data-tab="create-team">Create Team</button>
+                        <button class="tab-button active" data-tab="manage-team">Manage Team</button>
                     </div>
                     
-                    <div class="tab-content active" id="create-team">
+                    <div class="tab-content" id="create-team">
                         <div class="card">
                             <h3>Create New Team</h3>
                             <p>Create a new team that you will own and can invite others to join.</p>
@@ -47,22 +46,7 @@
                         </div>
                     </div>
                     
-                    <div class="tab-content" id="join-team">
-                        <div class="card">
-                            <h3>Join Existing Team</h3>
-                            <p>Join a team by entering the team ID provided by the team owner.</p>
-                            <form id="add-team-form">
-                                <div class="form-group">
-                                    <label for="team-id">Team ID:</label>
-                                    <input type="text" id="team-id" name="team-id" required placeholder="Enter team ID">
-                                </div>
-                                <button type="submit" class="button primary">Join Team</button>
-                            </form>
-                            <div id="add-team-result" class="result-box hidden"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="tab-content" id="manage-team">
+                    <div class="tab-content active" id="manage-team">
                         <div class="card">
                             <h3>Your Teams</h3>
                             <div id="team-list">
