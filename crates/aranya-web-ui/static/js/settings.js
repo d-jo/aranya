@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Setup import/export functionality
+    setupImportExport();
+    
     // Display current API storage info
     displayCurrentApiStorageInfo();
     
@@ -348,4 +351,233 @@ tabButtons.forEach(button => {
         const tabId = button.getAttribute('data-tab');
         document.getElementById(tabId).classList.add('active');
     });
-}); 
+});
+
+function setupImportExport() {
+    // Export button
+    const exportBtn = document.getElementById('export-endpoints-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportApiEndpoints);
+    }
+    
+    // Import button
+    const importBtn = document.getElementById('import-endpoints-btn');
+    const importFile = document.getElementById('import-endpoints-file');
+    if (importBtn && importFile) {
+        importBtn.addEventListener('click', () => {
+            importFile.click();
+        });
+        
+        importFile.addEventListener('change', importApiEndpoints);
+    }
+    
+    // Clear all endpoints button
+    const clearBtn = document.getElementById('clear-all-endpoints-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearAllApiEndpoints);
+    }
+}
+
+function exportApiEndpoints() {
+    try {
+        // Get all endpoints
+        const endpoints = getApiEndpoints();
+        
+        // Create a copy of the endpoints without any sensitive data (if any)
+        const endpointsToExport = endpoints.map(endpoint => {
+            // Make a copy of the endpoint
+            const exportedEndpoint = {
+                id: endpoint.id,
+                name: endpoint.name,
+                url: endpoint.url,
+                isDefault: endpoint.isDefault,
+                dateAdded: endpoint.dateAdded
+            };
+            
+            // Fix default endpoint to always have the standard URL
+            if (endpoint.id === 'default') {
+                exportedEndpoint.url = 'http://127.0.0.1:8000';
+                exportedEndpoint.name = 'Default Local API';
+            }
+            
+            return exportedEndpoint;
+        });
+        
+        // Convert to JSON
+        const endpointsJson = JSON.stringify(endpointsToExport, null, 2);
+        
+        // Create a Blob with the JSON data
+        const blob = new Blob([endpointsJson], {type: 'application/json'});
+        
+        // Create a download link
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `aranya_api_endpoints_${new Date().toISOString().split('T')[0]}.json`;
+        
+        // Trigger the download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('API endpoints exported successfully');
+    } catch (error) {
+        console.error('Error exporting API endpoints:', error);
+        showToast('Failed to export API endpoints', true);
+    }
+}
+
+function importApiEndpoints(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // Parse the imported data
+            const importedEndpoints = JSON.parse(e.target.result);
+            
+            // Validate the format
+            if (!Array.isArray(importedEndpoints)) {
+                throw new Error('Invalid format: Expected an array of endpoints');
+            }
+            
+            // Get current endpoints
+            const currentEndpoints = getApiEndpoints();
+            
+            // Keep track of the default endpoint
+            const defaultEndpoint = currentEndpoints.find(ep => ep.id === 'default');
+            
+            // Track how many were added
+            let added = 0;
+            let skipped = 0;
+            let updated = 0;
+            
+            // Process each imported endpoint
+            importedEndpoints.forEach(endpoint => {
+                // Validate required fields
+                if (!endpoint.name || !endpoint.url) {
+                    skipped++;
+                    return;
+                }
+                
+                // Special handling for default endpoint
+                if (endpoint.id === 'default' || endpoint.isDefault === true) {
+                    // Skip the default endpoint - we don't want to override the current default
+                    skipped++;
+                    return;
+                }
+                
+                // Skip if URL already exists to avoid duplicates
+                const existingEndpoint = currentEndpoints.find(ep => ep.url === endpoint.url);
+                if (existingEndpoint) {
+                    // If it's an existing non-default endpoint, update the name if different
+                    if (existingEndpoint.id !== 'default' && existingEndpoint.name !== endpoint.name) {
+                        existingEndpoint.name = endpoint.name;
+                        updated++;
+                    } else {
+                        skipped++;
+                    }
+                    return;
+                }
+                
+                // Generate a new ID to avoid conflicts
+                const id = 'api_' + Date.now() + '_' + added;
+                
+                // Add the endpoint
+                currentEndpoints.push({
+                    id: id,
+                    name: endpoint.name,
+                    url: endpoint.url,
+                    isDefault: false, // Never import as default
+                    dateAdded: endpoint.dateAdded || new Date().toISOString()
+                });
+                
+                added++;
+            });
+            
+            // Ensure we always have a default endpoint
+            if (!currentEndpoints.some(ep => ep.id === 'default')) {
+                currentEndpoints.push(defaultEndpoint);
+            }
+            
+            // Save the updated endpoints
+            saveApiEndpoints(currentEndpoints);
+            
+            // Refresh the UI
+            initializeApiEndpointsList();
+            
+            // Clear the file input
+            event.target.value = '';
+            
+            // Show success message
+            let message = '';
+            if (added > 0) {
+                message += `Imported ${added} new endpoint${added !== 1 ? 's' : ''}`;
+            }
+            if (updated > 0) {
+                if (message) message += ', ';
+                message += `Updated ${updated} endpoint${updated !== 1 ? 's' : ''}`;
+            }
+            if (skipped > 0) {
+                if (message) message += ', ';
+                message += `Skipped ${skipped} endpoint${skipped !== 1 ? 's' : ''}`;
+            }
+            
+            if (added > 0 || updated > 0) {
+                showToast(message);
+            } else {
+                showToast(`No new endpoints imported, all ${skipped} were duplicates or default endpoints`, true);
+            }
+        } catch (error) {
+            console.error('Error importing API endpoints:', error);
+            showToast('Failed to import API endpoints: ' + error.message, true);
+            
+            // Clear the file input
+            event.target.value = '';
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+function clearAllApiEndpoints() {
+    if (!confirm('Are you sure you want to clear all API endpoints? This will remove all endpoints except the default one.')) {
+        return;
+    }
+    
+    try {
+        // Create a standard default endpoint
+        const defaultEndpoint = {
+            id: 'default',
+            name: 'Default Local API',
+            url: 'http://127.0.0.1:8000',
+            isDefault: true,
+            dateAdded: new Date().toISOString()
+        };
+        
+        // Save only the default endpoint
+        saveApiEndpoints([defaultEndpoint]);
+        
+        // Make sure we're using the default endpoint
+        const config = getConfig();
+        if (config.apiEndpointId !== 'default') {
+            updateConfig('apiEndpointId', 'default');
+            updateConfig('apiUrl', defaultEndpoint.url);
+            updateConfig('apiName', defaultEndpoint.name);
+            
+            // Reload page to apply the change
+            window.apiEndpointChanged = true;
+            window.location.reload();
+            return;
+        }
+        
+        // Refresh the UI
+        initializeApiEndpointsList();
+        displayCurrentApiConnection();
+        
+        showToast('All API endpoints cleared successfully');
+    } catch (error) {
+        console.error('Error clearing API endpoints:', error);
+        showToast('Failed to clear API endpoints: ' + error.message, true);
+    }
+} 

@@ -58,6 +58,7 @@
                         <div class="tabs">
                             <button class="tab-button active" data-tab="api-endpoints">API Endpoints</button>
                             <button class="tab-button" data-tab="add-endpoint">Add Endpoint</button>
+                            <button class="tab-button" data-tab="import-export">Import/Export</button>
                         </div>
                         
                         <div class="tab-content active" id="api-endpoints">
@@ -100,6 +101,27 @@
                                 </div>
                                 <button type="submit" class="button primary">Add Endpoint</button>
                             </form>
+                        </div>
+                        
+                        <div class="tab-content" id="import-export">
+                            <h4>Import/Export API Endpoints</h4>
+                            <p>Save your API endpoint configurations to a file or load from a previously saved file.</p>
+                            
+                            <div class="button-group mt-4">
+                                <button id="export-endpoints-btn" class="button primary">Export API Endpoints</button>
+                                <input type="file" id="import-endpoints-file" accept=".json" style="display: none;">
+                                <button id="import-endpoints-btn" class="button secondary">Import API Endpoints</button>
+                                <button id="clear-all-endpoints-btn" class="button warning">Clear All API Endpoints</button>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <h5>Notes:</h5>
+                                <ul>
+                                    <li>Exporting will save all your API endpoints to a JSON file.</li>
+                                    <li>Importing will merge with your existing endpoints (duplicates will be skipped).</li>
+                                    <li>The default API endpoint cannot be removed.</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
